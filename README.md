@@ -66,15 +66,19 @@ This app allows the user to import books and articles in other languages and rec
    * User can follow selected user
    * User can browse through the selected users' public content and posts and leave comments underneath
    * User can see the other users' details (username, profile picture, optional bio)
-* My Profile
-   * User can see own profile details and edit each (excluding username)
-   * User can see own imported content, public or private, and view each
-   * User can import content (book/article) or make a regular post
-   * User can see saved words and review each using flashcards (may or may not take up a new screen -- uses card view)
+   * User can go to My Stuff if the profile is their profile
 * Content View
    * User can read selected content
    * User can tap on individual words to see a translation
    * User can exit back to whichever screen they were on before viewing content
+* My Stuff
+   * User can see uploaded books
+   * User can see bookmarked posts
+   * User can see saved words and train using flashcards
+* Flashcards
+   * User can see flashcards with saved words on them
+   * User can type translation for each word
+   * User is notified if their translation is correct
 ### 3. Navigation
 
 **Tab Navigation** (Tab to Screen)
@@ -97,5 +101,9 @@ This app allows the user to import books and articles in other languages and rec
     * Content View (via clicking on user uploaded content)
 * Content View 
     * My profile, Home Screen, Search, User profile (via exiting content view, dependent on where content view was created)
+
+## Wireframe/Basic Design
+<img src="wireframe.jpeg" width=600>
+
 
 original at https://hackmd.io/xSUJQve6Q0yqeiNziqIqQQ
