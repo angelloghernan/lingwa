@@ -103,6 +103,7 @@ This app allows the user to import books and articles in other languages and rec
     * My profile, Home Screen, Search, User profile (via exiting content view, dependent on where content view was created)
 
 ## Wireframe/Basic Design
+(click to see bigger picture)
 <img src="wireframe.jpeg" width=600>
 
 
