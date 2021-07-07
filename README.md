@@ -104,7 +104,7 @@ This app allows the user to import books and articles in other languages and rec
 
 ## Wireframe/Basic Design
 (click to see bigger picture)
-<img src="wireframe.jpeg" width=600>
+<img src="Wireframe2.png" width=600>
 
 
 original at https://hackmd.io/xSUJQve6Q0yqeiNziqIqQQ
