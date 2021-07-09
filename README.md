@@ -106,5 +106,128 @@ This app allows the user to import books and articles in other languages and rec
 (click to see bigger picture)
 <img src="https://raw.githubusercontent.com/angelloghernan/lingwa/main/Wireframe2.png" width=600>
 
+## Schema 
+### Models
+User
+(excluding default properties: objectId, password, username, email, etc)
+| Property     |Type      |Description      |
+|-------|-------|-------|
+|profilePicture      |File      |user's profile picture |
+|Bio|String|short bio written by user|
+|followersCount|Number|number of followers for user|
+|savedWords|Array|contains all of user's saved words|
+|languagesLearning|Array|contains list of languages user is learning ("EN", "SP", "FR", etc)|
+
+FollowTable
+|Property|Type|Description|
+|--------|----|-----------|
+|follower|Pointer|points to User following the *followed* user|
+|followed|Pointer|points to User being followed by the *follower* user|
+
+Post
+(excluding default properties: objectId, createdAt, updatedAt)
+|Property|Type|Description|
+|--------|----|-----------|
+|author|Pointer|points to User who posted|
+|body|String|contains post content|
+|scope|String|contains privacy setting (available to *"all"*, available to *"friends"*, available to *"self"* only)|
+|likesCount|Number|number of likes on post|
+|replyCount|Number|number of replies to post|
+
+Reply
+(excluding default proprties: objectId, createdAt, updatedAt)
+|Property|Type|Description|
+|--------|----|-----------|
+|author|Pointer|points to User who posted|
+|replyingTo|Pointer|points to Post reply is under|
+|body|String|contains reply content|
+
+LikeTable
+|Property|Type|Description|
+|--------|----|-----------|
+|post|Pointer|points to Post being liked|
+|likedBy|Pointer|points to User liking post|
+
+Content
+(excluding default properties: objectId, createdAt, updatedAt)
+|Property|Type|Description|
+|--------|----|-----------|
+|uploader|Pointer|points to User who uploaded the book (if article, point to admin user)|
+|author|String|(nullable) contains book or article author if available|
+|type|String|either a "book" or "article"|
+|cover|File|(nullable) contains book cover or article image if available|
+|document|File|(nullable) contains epub file if a book|
+|articleContent|String|contains article content if an article|
+
+(Stretch goal model)
+Message
+|Property|Type|Description|
+|--------|----|-----------|
+|sender|Pointer|points to User who sent message|
+|receiver|Pointer|points to User who received message|
+|body|String|contains message content|
+|createdAt|Date|(default) time when message was sent, used for reconstructing conversations|
+
+
+
+
+### Networking
+* Sign up page
+   * (POST/Create): Sign up user using username and password
+* Home Screen
+   * (READ/Get): Get posts from followed users and from current user, listed by most recent
+   ```java
+    new Thread(new Runnable() { @Override public void run() {
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        ParseQuery<FollowTable> followingQuery = ParseQuery.getQuery("FollowTable");
+        
+        // Get all users that the current user is following, 
+        // add current user to list
+        followingQuery.whereEqualTo("follower", currentUser.getObjectId());
+        List<User> users = followingQuery.find();
+        
+        // make sure the query succeeded before proceeding
+        if (users != null) {
+            users.add(currentUser);
+        
+            // Get last 20 posts created by self or followed users, ordered by
+            // most recent
+            ParseQuery<Post> postQuery = ParseQuery.getQuery("Post");
+            postQuery.include("author");
+            postQuery.whereContainedIn("author", users);
+            postQuery.setLimit(20);
+            postQuery.addDescendingOrder("createdAt");
+
+            posts.addAll(postQuery.find());
+            // Finally, notify the adapter that the posts
+            // are now available
+            adapter.notifyDatasetChanged();
+        } else {
+            // error handling goes here
+        }
+    } } ).start();
+  
+   ```
+   * (POST/Create): If current user creates new post, create a new Post
+   * (POST/Update): If current user likes post, tell server
+   * (POST/Create): If current user replies to a post, create a Reply
+* Search
+   * (READ/Get): Get users with matching keywords in their name and posts with matching keywords in their name (may or may not be feasible)
+* User Profile
+   * (READ/Get): Get user information (username, bio, profilePicture)
+   * (READ/Get): Get posts created by user and show under main profile
+   * (POST/Update): If current user likes/unlikes post, tell server
+   * (POST/Create): If current user replies to a post, create a Reply
+   * (POST/Create): If current user follows user, create new entry in follower table
+   * (Delete): If current user unfollows user, delete entry in follower table
+* My Profile
+   * (READ/Get): Get same user information as above
+   * (READ/Get): Get books uploaded by user, liked posts, and saved words for display in My Stuff page
+   * (POST/Create): If user uploads book, create new Book
+* Content View
+   * (READ/Get): Get book (epub) information to be displayed
+   * (READ/Get): Alternatively, get article information to be displayed
+   * (POST/Update): If user saves a word, update savedWord
+
 
 original at https://hackmd.io/xSUJQve6Q0yqeiNziqIqQQ
