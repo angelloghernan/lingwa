@@ -6,6 +6,10 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
+    packagingOptions {
+        exclude 'project.properties'
+    }
+
     defaultConfig {
         applicationId "com.example.lingwa"
         minSdkVersion 21
@@ -29,6 +33,7 @@ android {
 }
 
 repositories {
+    mavenCentral()
     maven {
         url 'https://github.com/psiegman/mvn-repo/raw/master/releases'
     }
@@ -48,4 +53,8 @@ dependencies {
         exclude group: 'xmlpull'
     }
     implementation 'org.slf4j:slf4j-android:1.7.25'
+    implementation platform('com.google.cloud:libraries-bom:20.8.0')
+
+    implementation "com.squareup.okhttp:okhttp:2.5.0"
+    implementation "com.google.code.gson:gson:2.8.5"
 }
