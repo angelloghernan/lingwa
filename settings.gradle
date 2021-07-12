@@ -1,0 +1,2 @@
+rootProject.name = "Lingwa"
+include ':app'
