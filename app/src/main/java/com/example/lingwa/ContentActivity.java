@@ -102,10 +102,24 @@ public class ContentActivity extends AppCompatActivity {
                 // TODO: implement translation pop-up using Google Translate API
                 // Toast.makeText(context, "Clicked on word: " + word, Toast.LENGTH_SHORT).show();
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage("Translation goes here")
-                        .setTitle("Translation");
-                AlertDialog dialog = builder.create();
-                dialog.show();
+
+                Translator.translateWord(word, "es", "en", new Translator.TranslatorCallback() {
+                    @Override
+                    public void onTranslationSuccess(String translation) {
+                        builder.setMessage(translation)
+                                .setTitle("Translation");
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+
+                    @Override
+                    public void onTranslationFailure(Exception e) {
+                        Log.e(TAG, "on failure to translate word: " + e);
+                    }
+                });
+
+
+
             }
 
             // TODO: change draw state so that text does not look like a link
