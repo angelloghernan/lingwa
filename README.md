@@ -30,8 +30,6 @@ This app allows the user to import books and articles in other languages and rec
 
 * User can sign up, log in, and log out.
 * User can import ebooks saved on phone (using epub format) to read and save on their account
-* User can import news articles using a URL to read
-* User can share imported articles as public content for others to view
 * User can tap on words in imported books & articles to see a translation to English, if applicable
 * User can save words to learn later on through flashcards
 * User can search for another user and follow them
