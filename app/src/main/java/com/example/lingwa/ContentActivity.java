@@ -22,7 +22,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.litho.widget.LongClickableSpan;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -80,9 +79,18 @@ public class ContentActivity extends AppCompatActivity {
     // Adds ClickableSpan to every word so that the user can tap on them.
     private void makeTextClickable() {
         // Currently using sample text to check.
-        String sampleText = "Hola, como estas".trim();
-        // Link movement method needed so that the text is highlighted when pressed.
-        tvBody.setMovementMethod(LinkMovementMethod.getInstance());
+        String sampleText = "El aeropuerto se considera como un aeródromo para el tráfico regular de aviones.\n" +
+                "\n" +
+                "Es un área definida de la superficie, ya sea de tierra, agua o hielo propuesto para la llegada, salida y movimiento en superficie de aeronaves de distintos tipos con llegadas y salidas nacionales e internacionales.\n" +
+                "\n" +
+                "Habitualmente este término se aplica a todas las pistas donde aterrizan aviones, sin embargo el término correcto es aeródromo.\n" +
+                "\n" +
+                "Los grandes aeropuertos cuentan con pistas de aterrizaje pavimentadas de uno o varios kilómetros de extensión, calles de rodaje, terminales de pasajeros y carga, grandes superficies de estacionamientos, etc.\n" +
+                "\n" +
+                "En los aeropuertos los aviones suelen recibir combustible, mantenimiento y reparaciones.".trim();
+        // Long link movement method needed so that the text is highlighted when pressed and
+        // the onClick and onLongClick functions are fired when clicked and held respectively
+        tvBody.setMovementMethod(LongClickLinkMovementMethod.getInstance());
         tvBody.setText(sampleText, TextView.BufferType.SPANNABLE);
         // Create a spannable so that we can edit the properties of individual words
         Spannable spannable = (Spannable) tvBody.getText();
@@ -95,36 +103,35 @@ public class ContentActivity extends AppCompatActivity {
         for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
             String possibleWord = sampleText.substring(start, end);
             if (Character.isLetterOrDigit(possibleWord.charAt(0))) {
-                ClickableSpan clickSpan = getLongClickableSpan(possibleWord);
+                LongClickableSpan clickSpan = getLongClickableSpan(possibleWord);
                 spannable.setSpan(clickSpan, start, end, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
     }
 
-    private ClickableSpan getLongClickableSpan(String spanWord) {
-        return new ClickableSpan() {
+    private LongClickableSpan getLongClickableSpan(String spanWord) {
+        return new LongClickableSpan() {
+
+            @Override
+            public void onLongClick(View view) {
+                ParseUser.getCurrentUser().addUnique("savedWords", spanWord);
+                ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e != null) {
+                            Log.e(TAG, "Error saving word: " + e.toString());
+                            return;
+                        }
+                        Toast.makeText(context, "Word saved!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
 
             final String word = spanWord;
 
             @Override
             public void onClick(@NonNull View widget) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setPositiveButton("Save Word", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        ParseUser.getCurrentUser().addUnique("savedWords", spanWord);
-                        ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                if (e != null) {
-                                    Log.e(TAG, "Error saving word: " + e.toString());
-                                    return;
-                                }
-                                Toast.makeText(context, "Word saved!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                });
-                builder.setNegativeButton("Cancel", null);
 
                 Translator.translateWord(word, "es", "en", new Translator.TranslatorCallback() {
                     @Override
@@ -143,9 +150,7 @@ public class ContentActivity extends AppCompatActivity {
 
             }
 
-            // TODO: change draw state so that text does not look like a link
             public void updateDrawState(TextPaint ds) {
-
                 ds.setUnderlineText(false);
             }
         };
