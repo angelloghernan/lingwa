@@ -21,6 +21,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.litho.widget.LongClickableSpan;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.BreakIterator;
@@ -87,21 +93,40 @@ public class ContentActivity extends AppCompatActivity {
         for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
             String possibleWord = sampleText.substring(start, end);
             if (Character.isLetterOrDigit(possibleWord.charAt(0))) {
-                ClickableSpan clickSpan = getClickableSpan(possibleWord);
+                ClickableSpan clickSpan = getLongClickableSpan(possibleWord);
                 spannable.setSpan(clickSpan, start, end, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
     }
 
-    private ClickableSpan getClickableSpan(String spanWord) {
+    private ClickableSpan getLongClickableSpan(String spanWord) {
         return new ClickableSpan() {
+
             final String word = spanWord;
 
             @Override
             public void onClick(@NonNull View widget) {
-                // TODO: implement translation pop-up using Google Translate API
-                // Toast.makeText(context, "Clicked on word: " + word, Toast.LENGTH_SHORT).show();
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setPositiveButton("Save Word", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        ParseUser.getCurrentUser().addUnique("savedWords", spanWord);
+                        ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if (e != null) {
+                                    Log.e(TAG, "Error saving word: " + e.toString());
+                                    return;
+                                }
+                                Toast.makeText(context, "Word saved!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                    }
+                });
 
                 Translator.translateWord(word, "es", "en", new Translator.TranslatorCallback() {
                     @Override
@@ -117,8 +142,6 @@ public class ContentActivity extends AppCompatActivity {
                         Log.e(TAG, "on failure to translate word: " + e);
                     }
                 });
-
-
 
             }
 

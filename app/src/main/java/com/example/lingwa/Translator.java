@@ -26,19 +26,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Translator {
-    private static String subscriptionKey = BuildConfig.TRANSLATOR_KEY;
+    private static final String subscriptionKey = BuildConfig.TRANSLATOR_KEY;
 
-    private static String location = "global";
-
-    HttpUrl url = new HttpUrl.Builder()
-            .scheme("https")
-            .host("api.cognitive.microsofttranslator.com")
-            .addPathSegment("/translate")
-            .addQueryParameter("api-version", "3.0")
-            .addQueryParameter("from", "en")
-            .addQueryParameter("to", "es")
-            .addQueryParameter("to", "it")
-            .build();
+    private static final String location = "global";
 
     OkHttpClient client = new OkHttpClient();
 
