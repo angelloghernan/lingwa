@@ -11,9 +11,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/etPassword"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="226dp"
-        android:layout_marginTop="39dp"
+        android:layout_alignStart="@+id/etPassword"
+        android:layout_alignEnd="@+id/etPassword"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="0dp"
         android:text="Log In" />
 
     <EditText
@@ -39,4 +41,16 @@
         android:ems="10"
         android:hint="Password"
         android:inputType="textPassword" />
+
+    <Button
+        android:id="@+id/btnSignUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnLogIn"
+        android:layout_alignStart="@+id/btnLogIn"
+        android:layout_alignEnd="@+id/btnLogIn"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="0dp"
+        android:text="Sign Up" />
 </RelativeLayout>

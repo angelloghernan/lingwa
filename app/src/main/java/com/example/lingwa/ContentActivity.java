@@ -111,7 +111,6 @@ public class ContentActivity extends AppCompatActivity {
 
     private LongClickableSpan getLongClickableSpan(String spanWord) {
         return new LongClickableSpan() {
-
             @Override
             public void onLongClick(View view) {
                 ParseUser.getCurrentUser().addUnique("savedWords", spanWord);

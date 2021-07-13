@@ -2,6 +2,7 @@ package com.example.lingwa;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,14 +13,18 @@ import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
+    private final Context context = this;
     EditText etUsername;
     EditText etPassword;
     Button btnLogIn;
+    Button btnSignUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         btnLogIn = findViewById(R.id.btnLogIn);
+        btnSignUp = findViewById(R.id.btnSignUp);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
 
@@ -43,7 +49,37 @@ public class LoginActivity extends AppCompatActivity {
                 loginUser(username, password);
             }
         });
+
+        btnSignUp.setOnClickListener(signUpClickListener);
     }
+
+    private final View.OnClickListener signUpClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            ParseObject newUser = ParseUser.create("_User");
+
+            String username = etUsername.getText().toString();
+            String password = etPassword.getText().toString();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(context, "Please fill out the required details", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            newUser.put("username", username);
+            newUser.put("password", password);
+            newUser.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if (e != null) {
+                        Log.e(TAG, "Issue with sign up", e);
+                        return;
+                    }
+                    loginUser(username, password);
+                }
+            });
+        }
+    };
 
     private void loginUser(String username, String password) {
         Log.i(TAG, "attempting to log in user " + username);
