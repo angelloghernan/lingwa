@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -49,6 +50,7 @@ public class ContentActivity extends AppCompatActivity {
 
         btnUpload = findViewById(R.id.btnUpload);
         tvBody = findViewById(R.id.tvBody);
+        tvBody.setHighlightColor(Color.LTGRAY);
 
         // TODO: Allow user to import their own book to read
         /*
@@ -122,11 +124,7 @@ public class ContentActivity extends AppCompatActivity {
                         });
                     }
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                    }
-                });
+                builder.setNegativeButton("Cancel", null);
 
                 Translator.translateWord(word, "es", "en", new Translator.TranslatorCallback() {
                     @Override
@@ -147,7 +145,8 @@ public class ContentActivity extends AppCompatActivity {
 
             // TODO: change draw state so that text does not look like a link
             public void updateDrawState(TextPaint ds) {
-                super.updateDrawState(ds);
+
+                ds.setUnderlineText(false);
             }
         };
     }
