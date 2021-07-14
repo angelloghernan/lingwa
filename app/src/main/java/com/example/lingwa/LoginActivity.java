@@ -16,6 +16,9 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.parse.SignUpCallback;
+
+import nl.siegmann.epublib.epub.Main;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -56,7 +59,7 @@ public class LoginActivity extends AppCompatActivity {
     private final View.OnClickListener signUpClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            ParseObject newUser = ParseUser.create("_User");
+            ParseUser newUser = new ParseUser();
 
             String username = etUsername.getText().toString();
             String password = etPassword.getText().toString();
@@ -68,7 +71,7 @@ public class LoginActivity extends AppCompatActivity {
 
             newUser.put("username", username);
             newUser.put("password", password);
-            newUser.saveInBackground(new SaveCallback() {
+            newUser.signUpInBackground(new SignUpCallback() {
                 @Override
                 public void done(ParseException e) {
                     if (e != null) {
@@ -97,7 +100,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void goMainActivity() {
-        Intent i = new Intent(LoginActivity.this, ContentActivity.class);
+        Intent i = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(i);
     }
 }

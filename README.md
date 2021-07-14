@@ -34,16 +34,16 @@ This app allows the user to import books and articles in other languages and rec
 * User can save words to learn later on through flashcards
 * User can search for another user and follow them
 * User can see public content from followed users
-* User can make regular posts without any content attached
+* User can make regular contents without any content attached
 
 **Optional Nice-to-have Stories**
 
-* User can leave comments under other users' posts (almost required)
+* User can leave comments under other users' contents (almost required)
 * User can message other users privately if they mutually follow each other (*almost* a required story)
 * User can upload a profile picture and a short bio (also almost required)
-* User can favorite/like other users' content and posts to save for later
-* User can see trending topics in selected countries and read posts from people in those countries (at least from Twitter)
-* User can translate trending posts just like imported articles and books
+* User can favorite/like other users' content and contents to save for later
+* User can see trending topics in selected countries and read contents from people in those countries (at least from Twitter)
+* User can translate trending contents just like imported articles and books
 
 
 ### 2. Screen Archetypes
@@ -62,7 +62,7 @@ This app allows the user to import books and articles in other languages and rec
    * User can click on other users to see their profile (brings to user profile)
 * User Profile
    * User can follow selected user
-   * User can browse through the selected users' public content and posts and leave comments underneath
+   * User can browse through the selected users' public content and contents and leave comments underneath
    * User can see the other users' details (username, profile picture, optional bio)
    * User can go to My Stuff if the profile is their profile
 * Content View
@@ -71,7 +71,7 @@ This app allows the user to import books and articles in other languages and rec
    * User can exit back to whichever screen they were on before viewing content
 * My Stuff
    * User can see uploaded books
-   * User can see bookmarked posts
+   * User can see bookmarked contents
    * User can see saved words and train using flashcards
 * Flashcards
    * User can see flashcards with saved words on them
@@ -127,10 +127,10 @@ Post
 |Property|Type|Description|
 |--------|----|-----------|
 |author|Pointer|points to User who posted|
-|body|String|contains post content|
+|body|String|contains content content|
 |scope|String|contains privacy setting (available to *"all"*, available to *"friends"*, available to *"self"* only)|
-|likesCount|Number|number of likes on post|
-|replyCount|Number|number of replies to post|
+|likesCount|Number|number of likes on content|
+|replyCount|Number|number of replies to content|
 
 Reply
 (excluding default proprties: objectId, createdAt, updatedAt)
@@ -143,8 +143,8 @@ Reply
 LikeTable
 |Property|Type|Description|
 |--------|----|-----------|
-|post|Pointer|points to Post being liked|
-|likedBy|Pointer|points to User liking post|
+|content|Pointer|points to Post being liked|
+|likedBy|Pointer|points to User liking content|
 
 Content
 (excluding default properties: objectId, createdAt, updatedAt)
@@ -173,7 +173,7 @@ Message
 * Sign up page
    * (POST/Create): Sign up user using username and password
 * Home Screen
-   * (READ/Get): Get posts from followed users and from current user, listed by most recent
+   * (READ/Get): Get contents from followed users and from current user, listed by most recent
    ```java
     new Thread(new Runnable() { @Override public void run() {
         ParseUser currentUser = ParseUser.getCurrentUser();
@@ -188,7 +188,7 @@ Message
         if (users != null) {
             users.add(currentUser);
         
-            // Get last 20 posts created by self or followed users, ordered by
+            // Get last 20 contents created by self or followed users, ordered by
             // most recent
             ParseQuery<Post> postQuery = ParseQuery.getQuery("Post");
             postQuery.include("author");
@@ -196,8 +196,8 @@ Message
             postQuery.setLimit(20);
             postQuery.addDescendingOrder("createdAt");
 
-            posts.addAll(postQuery.find());
-            // Finally, notify the adapter that the posts
+            contents.addAll(postQuery.find());
+            // Finally, notify the adapter that the contents
             // are now available
             adapter.notifyDatasetChanged();
         } else {
@@ -206,21 +206,21 @@ Message
     } } ).start();
   
    ```
-   * (POST/Create): If current user creates new post, create a new Post
-   * (POST/Update): If current user likes post, tell server
-   * (POST/Create): If current user replies to a post, create a Reply
+   * (POST/Create): If current user creates new content, create a new Post
+   * (POST/Update): If current user likes content, tell server
+   * (POST/Create): If current user replies to a content, create a Reply
 * Search
-   * (READ/Get): Get users with matching keywords in their name and posts with matching keywords in their name (may or may not be feasible)
+   * (READ/Get): Get users with matching keywords in their name and contents with matching keywords in their name (may or may not be feasible)
 * User Profile
    * (READ/Get): Get user information (username, bio, profilePicture)
-   * (READ/Get): Get posts created by user and show under main profile
-   * (POST/Update): If current user likes/unlikes post, tell server
-   * (POST/Create): If current user replies to a post, create a Reply
+   * (READ/Get): Get contents created by user and show under main profile
+   * (POST/Update): If current user likes/unlikes content, tell server
+   * (POST/Create): If current user replies to a content, create a Reply
    * (POST/Create): If current user follows user, create new entry in follower table
    * (Delete): If current user unfollows user, delete entry in follower table
 * My Profile
    * (READ/Get): Get same user information as above
-   * (READ/Get): Get books uploaded by user, liked posts, and saved words for display in My Stuff page
+   * (READ/Get): Get books uploaded by user, liked contents, and saved words for display in My Stuff page
    * (POST/Create): If user uploads book, create new Book
 * Content View
    * (READ/Get): Get book (epub) information to be displayed
