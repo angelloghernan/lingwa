@@ -1,5 +1,6 @@
 package com.example.lingwa.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,12 +14,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.lingwa.ContentActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
+import com.example.lingwa.wrappers.ContentWrapper;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
+
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,7 +123,21 @@ public class HomeFragment extends Fragment {
     PostAdapter.AdapterCallback callback = new PostAdapter.AdapterCallback() {
         @Override
         public void onPostSelected(int position, Content content) {
+            // Wrap up everything in the selected post and send this information to the content activity
+            Intent intent = new Intent(getContext(), ContentActivity.class);
 
+            ContentWrapper parcelableWrapper = new ContentWrapper(content.getObjectId(),
+                    content.getTitle(), content.getAuthor());
+            parcelableWrapper.contentType = content.getContentType();
+            if (parcelableWrapper.contentType == Content.TYPE_ARTICLE) {
+                parcelableWrapper.attachmentUrl = content.getAttachment().getUrl();
+            } else {
+                parcelableWrapper.body = content.getBody();
+            }
+            parcelableWrapper.thumbnailUrl = content.getThumbnail().getUrl();
+
+            intent.putExtra("content", Parcels.wrap(parcelableWrapper));
+            startActivity(intent);
         }
     };
 }
