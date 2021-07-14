@@ -32,8 +32,8 @@
             android:value="@string/back4app_client_key" />
 
         <provider
-            android:name=".BookProvider"
-            android:authorities="com.example.lingwa.BookProvider"
+            android:name=".util.BookProvider"
+            android:authorities="com.example.lingwa.util.BookProvider"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">

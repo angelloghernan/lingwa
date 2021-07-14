@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.util;
 
 import android.text.style.ClickableSpan;
 import android.view.View;

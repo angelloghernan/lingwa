@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.util;
 
 import android.database.Cursor;
 import android.os.CancellationSignal;

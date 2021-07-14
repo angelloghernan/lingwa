@@ -1,23 +1,15 @@
 package com.example.lingwa;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextPaint;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,26 +18,22 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.lingwa.models.Content;
+import com.example.lingwa.util.LongClickLinkMovementMethod;
+import com.example.lingwa.util.LongClickableSpan;
+import com.example.lingwa.util.Paginator;
+import com.example.lingwa.util.Translator;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import org.parceler.Parcels;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
-import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.epub.EpubReader;
 
 public class ContentActivity extends AppCompatActivity {
 
@@ -54,7 +42,7 @@ public class ContentActivity extends AppCompatActivity {
     Button btnUpload;
     TextView tvBody;
     ContentWrapper contentWrapper;
-    List<String> bodyPages;
+    Paginator paginator;
     int currentPage = 0;
 
     @Override
@@ -81,7 +69,7 @@ public class ContentActivity extends AppCompatActivity {
                         }
                         break;
                     case R.id.action_next_page:
-                        if (currentPage < bodyPages.size() - 1) {
+                        if (currentPage < paginator.size() - 1) {
                             currentPage++;
                         } else {
                             return false;
@@ -90,7 +78,7 @@ public class ContentActivity extends AppCompatActivity {
                     default:
                         return false;
                 }
-                makeTextClickable(bodyPages.get(currentPage));
+                makeTextClickable(paginator.get(currentPage).toString());
                 return true;
             }
         });
@@ -100,17 +88,16 @@ public class ContentActivity extends AppCompatActivity {
         observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                // TODO: In progress -- try to break up the text into pages. This is going to be more difficult than anticipated
-                int maxLines = tvBody.getHeight() / tvBody.getLineHeight();
-                // convert text size to sp from px so we can calculate the chars per line
-                float textSize = pxToSp(tvBody.getTextSize());
-                tvBody.setMaxLines(maxLines);
-                tvBody.setHighlightColor(Color.LTGRAY);
+                paginator = new Paginator(contentWrapper.body,
+                        tvBody.getWidth(),
+                        tvBody.getHeight(),
+                        tvBody.getPaint(),
+                        tvBody.getLineSpacingMultiplier(),
+                        tvBody.getLineSpacingExtra(),
+                        tvBody.getIncludeFontPadding());
 
-                int charsPerLine = (int) (tvBody.getWidth() / textSize);
-                int totalChars = (charsPerLine * maxLines) - (int) (pxToSp(tvBody.getLineSpacingExtra()) * maxLines);
-                bodyPages = getParts(contentWrapper.body, totalChars);
-                makeTextClickable(bodyPages.get(0));
+                tvBody.setHighlightColor(Color.LTGRAY);
+                makeTextClickable(paginator.get(0).toString());
                 tvBody.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
