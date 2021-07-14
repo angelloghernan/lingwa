@@ -11,10 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.lingwa.LoginActivity;
 import com.example.lingwa.R;
 import com.parse.ParseUser;
+
+import org.w3c.dom.Text;
+
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,6 +38,9 @@ public class MyProfileFragment extends Fragment {
     private String mParam2;
 
     Button btnLogOut;
+    TextView tvProfileUsername;
+    TextView tvProfileBio;
+    ImageView ivProfilePicture;
 
     public MyProfileFragment() {
         // Required empty public constructor
@@ -72,7 +82,26 @@ public class MyProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         btnLogOut = view.findViewById(R.id.btnLogOut);
+        tvProfileBio = view.findViewById(R.id.tvProfileBio);
+        tvProfileUsername = view.findViewById(R.id.tvProfileUsername);
+        ivProfilePicture = view.findViewById(R.id.ivProfilePicture);
+
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        tvProfileUsername.setText(currentUser.getUsername());
+        tvProfileBio.setText(currentUser.getString("bio"));
+        if (currentUser.getParseFile("profilePicture") != null) {
+            Glide.with(requireContext())
+                    .load(currentUser.getParseFile("profilePicture").getUrl())
+                    .circleCrop()
+                    .into(ivProfilePicture);
+        } else {
+            Glide.with(requireContext())
+                    .load(R.drawable.default_profile_picture)
+                    .circleCrop()
+                    .into(ivProfilePicture);
+        }
 
         btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override

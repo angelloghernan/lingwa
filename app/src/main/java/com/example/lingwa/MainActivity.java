@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
         final FragmentManager fragmentManager = getSupportFragmentManager();
 
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvTabs);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bnvTabs);
 
         final Fragment homeFragment = new HomeFragment();
         final Fragment myProfileFragment = new MyProfileFragment();
