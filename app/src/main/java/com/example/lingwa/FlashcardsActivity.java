@@ -93,37 +93,33 @@ public class FlashcardsActivity extends AppCompatActivity {
     View.OnClickListener flipFlashcard = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Animation animation = flFlashcard.getAnimation();
             if (flashcardFlipping)
                 return;
 
             flashcardFlipping = true;
 
             if (!flashcardFlipped) {
-                flashcardFlipped = true;
-                flFlashcard.animate().rotationY(180f).setDuration(FLIP_DURATION).start();
-                tvWord.animate().rotationY(180f).setDuration(FLIP_DURATION).start();
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        tvWord.setText(wordTranslation);
-                        flashcardFlipping = false;
-                    }
-                }, FLIP_DURATION/2);
+                flipFlashcard(180f, wordTranslation);
+
             } else {
-                flashcardFlipped = false;
-                flFlashcard.animate().rotationY(360f).setDuration(FLIP_DURATION).start();
-                tvWord.animate().rotationY(360f).setDuration(FLIP_DURATION).start();
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        tvWord.setText(currentWord);
-                        flashcardFlipping = false;
-                    }
-                }, FLIP_DURATION/2);
+                flipFlashcard(360f, currentWord);
             }
+
+            flashcardFlipped = !flashcardFlipped;
         }
     };
+
+    private void flipFlashcard(float degrees, String newText) {
+        flFlashcard.animate().rotationY(degrees).setDuration(FLIP_DURATION).start();
+        tvWord.animate().rotationY(degrees).setDuration(FLIP_DURATION).start();
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                tvWord.setText(newText);
+                flashcardFlipping = false;
+            }
+        }, FLIP_DURATION/2);
+    }
 
     private void nextWord() {
         Translator.translateWord(currentWord, "es", "en", new Translator.TranslatorCallback() {
