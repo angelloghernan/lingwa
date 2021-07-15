@@ -13,7 +13,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Lingwa">
-        <activity android:name=".MyStuffActivity"></activity>
+        <activity android:name=".FlashcardsActivity"></activity>
+        <activity android:name=".MyStuffActivity" />
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,8 +44,8 @@
             </intent-filter>
         </provider>
 
-        <activity android:name=".ContentActivity"></activity>
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".ContentActivity" />
+        <activity android:name=".MainActivity" />
     </application>
 
 </manifest>
