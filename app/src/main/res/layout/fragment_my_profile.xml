@@ -52,4 +52,13 @@
         android:layout_marginBottom="0dp"
         android:text="Bio"
         android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btnMyStuff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileBio"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp"
+        android:text="My Stuff" />
 </RelativeLayout>

@@ -112,7 +112,6 @@ public class HomeFragment extends Fragment {
                     Log.e(TAG, "Issue getting content posts ", e);
                     return;
                 }
-                contentList.addAll(content);
                 adapter.clear();
                 adapter.addAll(content);
                 adapter.notifyDataSetChanged();

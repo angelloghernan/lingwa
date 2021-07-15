@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.lingwa.LoginActivity;
+import com.example.lingwa.MyStuffActivity;
 import com.example.lingwa.R;
 import com.parse.ParseUser;
 
@@ -38,6 +39,7 @@ public class MyProfileFragment extends Fragment {
     private String mParam2;
 
     Button btnLogOut;
+    Button btnMyStuff;
     TextView tvProfileUsername;
     TextView tvProfileBio;
     ImageView ivProfilePicture;
@@ -84,6 +86,7 @@ public class MyProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         btnLogOut = view.findViewById(R.id.btnLogOut);
+        btnMyStuff = view.findViewById(R.id.btnMyStuff);
         tvProfileBio = view.findViewById(R.id.tvProfileBio);
         tvProfileUsername = view.findViewById(R.id.tvProfileUsername);
         ivProfilePicture = view.findViewById(R.id.ivProfilePicture);
@@ -108,6 +111,14 @@ public class MyProfileFragment extends Fragment {
             public void onClick(View v) {
                 ParseUser.logOut();
                 Intent i = new Intent(view.getContext(), LoginActivity.class);
+                startActivity(i);
+            }
+        });
+
+        btnMyStuff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(view.getContext(), MyStuffActivity.class);
                 startActivity(i);
             }
         });
