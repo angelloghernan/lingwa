@@ -9,13 +9,15 @@
 
     <Button
         android:id="@+id/btnLogOut"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvProfileBio"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="190dp"
-        android:layout_marginTop="140dp"
-        android:text="Log Out" />
+        android:layout_alignTop="@+id/btnMyStuff"
+        android:layout_alignEnd="@+id/tvProfileBio"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="0dp"
+        android:text="Log Out"
+        android:textColor="@color/dark_red" />
 
     <ImageView
         android:id="@+id/ivProfilePicture"
@@ -48,17 +50,20 @@
         android:layout_alignParentEnd="true"
         android:layout_marginStart="0dp"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="15dp"
         android:layout_marginBottom="0dp"
         android:text="Bio"
         android:textSize="16sp" />
 
     <Button
         android:id="@+id/btnMyStuff"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvProfileBio"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:text="My Stuff" />
+        android:layout_alignStart="@+id/ivProfilePicture"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="30dp"
+        android:text="My Stuff"
+        android:textColor="#000000" />
 </RelativeLayout>
