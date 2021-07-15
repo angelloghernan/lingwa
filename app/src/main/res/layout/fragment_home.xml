@@ -11,4 +11,15 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true" />
+
+    <ProgressBar
+        android:id="@+id/pbPostLoading"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="307dp"
+        android:indeterminateTint="@android:color/holo_green_light"
+        android:visibility="invisible" />
 </RelativeLayout>

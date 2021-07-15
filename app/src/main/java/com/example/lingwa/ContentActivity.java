@@ -3,6 +3,7 @@ package com.example.lingwa;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Lifecycle;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.TextPaint;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -57,6 +59,8 @@ public class ContentActivity extends AppCompatActivity {
         final FragmentManager fragmentManager = getSupportFragmentManager();
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bnvContent);
+        Menu menu = bottomNavigationView.getMenu();
+        menu.setGroupCheckable(0, false, true);
 
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
@@ -66,17 +70,15 @@ public class ContentActivity extends AppCompatActivity {
                     case R.id.action_previous_page:
                         if (currentPage > 0) {
                             currentPage--;
-                        } else {
-                            return false;
+                            break;
                         }
-                        break;
+                        return false;
                     case R.id.action_next_page:
                         if (currentPage < paginator.size() - 1) {
                             currentPage++;
-                        } else {
-                            return false;
-                        }
                             break;
+                        }
+                        return false;
                     default:
                         return false;
                 }
@@ -157,7 +159,9 @@ public class ContentActivity extends AppCompatActivity {
                         builder.setMessage(translation)
                                 .setTitle("Translation");
                         AlertDialog dialog = builder.create();
-                        dialog.show();
+                        if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
+                            dialog.show();
+                        }
                     }
 
                     @Override
@@ -172,20 +176,5 @@ public class ContentActivity extends AppCompatActivity {
                 ds.setUnderlineText(false);
             }
         };
-    }
-
-    // utility so we can split the array list into x characters
-    private static List<String> getParts(String string, int partitionSize) {
-        List<String> parts = new ArrayList<String>();
-        int len = string.length();
-        for (int i=0; i<len; i+=partitionSize)
-        {
-            parts.add(string.substring(i, Math.min(len, i + partitionSize)));
-        }
-        return parts;
-    }
-
-    private int pxToSp(float px) {
-        return (int) (px / getResources().getDisplayMetrics().scaledDensity);
     }
 }

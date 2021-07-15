@@ -28,6 +28,7 @@ public class FlashcardsActivity extends AppCompatActivity {
     private static final String TAG = "FlashcardsActivity";
     ArrayList<String> savedWords;
     ProgressBar pbFlashcardProgress;
+    ProgressBar pbWordLoading;
     FrameLayout flFlashcard;
     TextView tvWord;
     EditText etAnswer;
@@ -49,6 +50,7 @@ public class FlashcardsActivity extends AppCompatActivity {
 
         savedWords = getIntent().getStringArrayListExtra("savedWords");
         pbFlashcardProgress = findViewById(R.id.pbFlashcardProgress);
+        pbWordLoading = findViewById(R.id.pbWordLoading);
         flFlashcard = findViewById(R.id.flFlashcard);
         tvWord = findViewById(R.id.tvWord);
         etAnswer = findViewById(R.id.etAnswer);
@@ -122,13 +124,20 @@ public class FlashcardsActivity extends AppCompatActivity {
     }
 
     private void nextWord() {
+        tvWord.setVisibility(View.INVISIBLE);
+        pbWordLoading.setVisibility(View.VISIBLE);
+        pbWordLoading.setActivated(true);
+
         Translator.translateWord(currentWord, "es", "en", new Translator.TranslatorCallback() {
             @Override
             public void onTranslationSuccess(String translation) {
                 flFlashcard.setRotationY(0f);
+                tvWord.setVisibility(View.VISIBLE);
                 tvWord.setRotationY(0f);
                 tvWord.setText(currentWord);
                 wordTranslation = translation.toLowerCase();
+                pbWordLoading.setVisibility(View.INVISIBLE);
+                pbWordLoading.setActivated(false);
             }
 
             @Override
