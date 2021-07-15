@@ -60,7 +60,8 @@ public class FlashcardsActivity extends AppCompatActivity {
                         return;
                     }
                     wordTranslation = null;
-                    pbFlashcardProgress.setProgress((int) (wordIndex / savedWords.size()));
+                    int progress = (int) (((float) wordIndex / (float) savedWords.size()) * 100);
+                    pbFlashcardProgress.setProgress(progress);
                     currentWord = savedWords.get(wordIndex);
                     etAnswer.setText("");
                     nextWord();
