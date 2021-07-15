@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -36,6 +37,7 @@ public class FlashcardsActivity extends AppCompatActivity {
     String wordTranslation = null;
     int wordIndex = 0;
     boolean flashcardFlipped = false;
+    boolean flashcardFlipping = false;
     Context context = this;
 
     final long FLIP_DURATION = 1000;
@@ -91,6 +93,12 @@ public class FlashcardsActivity extends AppCompatActivity {
     View.OnClickListener flipFlashcard = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            Animation animation = flFlashcard.getAnimation();
+            if (flashcardFlipping)
+                return;
+
+            flashcardFlipping = true;
+
             if (!flashcardFlipped) {
                 flashcardFlipped = true;
                 flFlashcard.animate().rotationY(180f).setDuration(FLIP_DURATION).start();
@@ -99,6 +107,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         tvWord.setText(wordTranslation);
+                        flashcardFlipping = false;
                     }
                 }, FLIP_DURATION/2);
             } else {
@@ -109,6 +118,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         tvWord.setText(currentWord);
+                        flashcardFlipping = false;
                     }
                 }, FLIP_DURATION/2);
             }

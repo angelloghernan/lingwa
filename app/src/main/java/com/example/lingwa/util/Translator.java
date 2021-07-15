@@ -17,6 +17,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,7 +48,7 @@ public class Translator {
                 .addHeader("Ocp-Apim-Subscription-Region", location)
                 .addHeader("Content-type", "application/json")
                 .build();
-        client.setProtocols(Arrays.asList(Protocol.HTTP_1_1));
+        client.setProtocols(Collections.singletonList(Protocol.HTTP_1_1));
         Response response = client.newCall(request).execute();
         return response.body().string();
     }
