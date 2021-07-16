@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.models.Word;
+import com.example.lingwa.wrappers.WordWrapper;
 import com.google.gson.JsonArray;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
@@ -31,6 +33,7 @@ public class MyStuffActivity extends AppCompatActivity {
     ListView lvSavedWords;
     Button btnPractice;
     Context context = this;
+    List<UserJoinWord> userWords = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +41,6 @@ public class MyStuffActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_stuff);
         lvSavedWords = findViewById(R.id.lvSavedWords);
         btnPractice = findViewById(R.id.btnPractice);
-
-        List<UserJoinWord> userWords = null;
 
         ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
         ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
@@ -54,7 +55,7 @@ public class MyStuffActivity extends AppCompatActivity {
         ArrayList<String> savedWords = new ArrayList<>();
         if (userWords != null) {
             for (int i = 0; i < userWords.size(); i++) {
-                    savedWords.add(Objects.requireNonNull(userWords.get(i).getWord().getString("originalWord")));
+                    savedWords.add(Objects.requireNonNull(userWords.get(i).getWord().getOriginalWord()));
             }
         }
 
@@ -66,7 +67,14 @@ public class MyStuffActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, FlashcardsActivity.class);
-                intent.putStringArrayListExtra("savedWords", savedWords);
+                ArrayList<WordWrapper> wordList = new ArrayList<>();
+                for (int i = 0; i < userWords.size(); i++) {
+                    Word word = userWords.get(i).getWord();
+                    WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId());
+                    wordList.add(wordWrapper);
+                }
+
+                intent.putExtra("wordList", Parcels.wrap(wordList));
                 startActivity(intent);
             }
         });
