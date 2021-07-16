@@ -21,6 +21,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.models.Word;
 import com.example.lingwa.util.LongClickLinkMovementMethod;
 import com.example.lingwa.util.LongClickableSpan;
 import com.example.lingwa.util.Paginator;
@@ -28,7 +30,12 @@ import com.example.lingwa.util.Translator;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.parse.CountCallback;
+import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
@@ -131,24 +138,63 @@ public class ContentActivity extends AppCompatActivity {
         }
     }
 
+    // This is a mess of callbacks, must fix later
     private LongClickableSpan getLongClickableSpan(String spanWord) {
         return new LongClickableSpan() {
             final String word = spanWord;
+
+            // On a long click, make an entry into the UserJoinWord table using the User and span's word.
+            // If such an entry already exists, inform the user.
             @Override
             public void onLongClick(View view) {
-                ParseUser.getCurrentUser().addUnique("savedWords", spanWord);
-                ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                ParseUser currentUser = ParseUser.getCurrentUser();
+                // Make an inner query on the Word table for words equal to this span's word
+                ParseQuery<Word> innerQuery = ParseQuery.getQuery(Word.class);
+                innerQuery.whereEqualTo(Word.KEY_ORIGINAL_WORD, word);
+                // Then, run a query to see if there are any entries with this information already.
+                ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
+                ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, currentUser);
+                ujwQuery.whereMatchesQuery(UserJoinWord.KEY_WORD, innerQuery);
+                ujwQuery.whereEqualTo(UserJoinWord.KEY_SAVED_BY, "user");
+                ujwQuery.getFirstInBackground(new GetCallback<UserJoinWord>(){
                     @Override
-                    public void done(ParseException e) {
-                        if (e != null) {
-                            Log.e(TAG, "Error saving word: " + e.toString());
+                    public void done(UserJoinWord ujw, ParseException e) {
+                        if (e != null && e.getCode() != ParseException.OBJECT_NOT_FOUND) {
+                            Log.e(TAG, "Error checking UserJoinWord table: " + e.toString());
                             return;
                         }
-                        Toast.makeText(context, "Word saved!", Toast.LENGTH_SHORT).show();
+                        if (ujw != null) {
+                            Toast.makeText(context, "This word is already in your word list", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+
+                        // If the entry doesn't exist, check if the word already exists in the Word table
+                        // (should be quick because we already requested this data)
+                        // If it exists, point to the entry. If not, create a new entry
+                        // Then, save the UserJoinWord table entry.
+                        innerQuery.getFirstInBackground(new GetCallback<Word>() {
+                            @Override
+                            public void done(Word wordEntry, ParseException e) {
+                                if (e != null) {
+                                    Log.e(TAG, "Error checking Word table: " + e.toString());
+                                }
+
+
+                                if (wordEntry == null) {
+                                    wordEntry = new Word(word);
+                                }
+
+                                UserJoinWord ujwEntry = new UserJoinWord(currentUser, wordEntry, 0, "user");
+                                ujwEntry.saveInBackground(saveUjwCallback);
+                            }
+                        });
                     }
                 });
             }
 
+            // On a regular click, use the Translator API to translate the word and
+            // let the user see the translation in an AlertDialog.
             @Override
             public void onClick(@NonNull View widget) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -177,4 +223,17 @@ public class ContentActivity extends AppCompatActivity {
             }
         };
     }
+
+    /* Lets user know if the UserJoinWord entry was successfully saved with a Toast. */
+    SaveCallback saveUjwCallback = new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e != null) {
+                    Log.e(TAG, e.toString());
+                    return;
+                }
+
+                Toast.makeText(context, "Success!", Toast.LENGTH_SHORT).show();
+            }
+    };
 }
