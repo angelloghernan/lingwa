@@ -164,7 +164,8 @@ public class ContentActivity extends AppCompatActivity {
                             return;
                         }
                         if (ujw != null) {
-                            Toast.makeText(context, "This word is already in your word list", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "This word is already in your word list",
+                                    Toast.LENGTH_SHORT).show();
                             return;
                         }
 
@@ -179,13 +180,12 @@ public class ContentActivity extends AppCompatActivity {
                                 if (e != null) {
                                     Log.e(TAG, "Error checking Word table: " + e.toString());
                                 }
-
-
                                 if (wordEntry == null) {
                                     wordEntry = new Word(word);
                                 }
 
                                 UserJoinWord ujwEntry = new UserJoinWord(currentUser, wordEntry, 0, "user");
+                                // callback only to inform user if the save was successful
                                 ujwEntry.saveInBackground(saveUjwCallback);
                             }
                         });

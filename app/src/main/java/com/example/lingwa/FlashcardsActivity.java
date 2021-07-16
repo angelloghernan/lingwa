@@ -67,7 +67,7 @@ public class FlashcardsActivity extends AppCompatActivity {
         nextWord();
 
         btnSubmit.setOnClickListener(submit);
-        flFlashcard.setOnClickListener(flipFlashcard);
+        flFlashcard.setOnClickListener(onFlashcardClicked);
 
 
     }
@@ -98,7 +98,7 @@ public class FlashcardsActivity extends AppCompatActivity {
             }
     };
 
-    View.OnClickListener flipFlashcard = new View.OnClickListener() {
+    View.OnClickListener onFlashcardClicked = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (flashcardFlipping)
