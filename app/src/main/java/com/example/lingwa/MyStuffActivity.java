@@ -75,7 +75,8 @@ public class MyStuffActivity extends AppCompatActivity {
 
         for (int i = 0; i < ujwEntryList.size(); i++) {
             Word word = ujwEntryList.get(i).getWord();
-            WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId());
+            WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(),
+                    ujwEntryList.get(i).getSavedBy());
             wordWrapper.setFamiliarityScore(ujwEntryList.get(i).getFamiliarityScore());
             wordWrapper.setParentObjectId(ujwEntryList.get(i).getObjectId());
             wordList.add(wordWrapper);

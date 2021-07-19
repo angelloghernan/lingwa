@@ -6,15 +6,17 @@ import org.parceler.Parcel;
 public class WordWrapper {
     public String word;
     public String objectId;
+    public String parentSavedBy;
     String parentObjectId;
     int familiarityScore;
 
     public WordWrapper() {
 
     }
-    public WordWrapper(String word, String objectId) {
+    public WordWrapper(String word, String objectId, String parentSavedBy) {
         this.word = word;
         this.objectId = objectId;
+        this.parentSavedBy = parentSavedBy;
     }
 
     public void setFamiliarityScore(int familiarityScore) {

@@ -1,19 +1,14 @@
 package com.example.lingwa.util;
 
-import android.util.Log;
-
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Word;
 import com.example.lingwa.wrappers.WordWrapper;
-import com.google.gson.JsonArray;
 import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +38,7 @@ public class FamiliarityAlgo {
         List<WordWrapper> newList = new ArrayList<>(size);
 
         // Sort in descending order of familiarity
-        Collections.sort(wordWrapperList, new SortByFamiliarity());
+        Collections.sort(wordWrapperList, new SortByPriority());
 
         int remainder = size % 3;
 
@@ -99,7 +94,7 @@ public class FamiliarityAlgo {
         for (int i = 0; i < numWords; i++) {
             Word word = new Word(contentBodyWords[i]);
             word.setObjectId("null");
-            WordWrapper wordWrapper = new WordWrapper(contentBodyWords[i], "null");
+            WordWrapper wordWrapper = new WordWrapper(contentBodyWords[i], "null", "unsaved");
             wordWrapper.setFamiliarityScore(1);
             wordWrapper.setParentObjectId("null");
             newWords.add(wordWrapper);
@@ -109,13 +104,40 @@ public class FamiliarityAlgo {
     }
 }
 
-class SortByFamiliarity implements Comparator<WordWrapper> {
+class SortByPriority implements Comparator<WordWrapper> {
+    public static final String BY_ALGORITHM = "algorithm";
+    public static final String BY_USER = "user";
+    public static final String BY_NOBODY = "unsaved";
+
     @Override
     public int compare(WordWrapper o1, WordWrapper o2) {
-        if (o2.getFamiliarityScore() == o1.getFamiliarityScore()) {
+        int o2Priority = calculatePriorityScore(o2);
+        int o1Priority = calculatePriorityScore(o1);
+
+        if (o2Priority == o1Priority) {
             return o2.word.length() - o1.word.length();
         }
-        return o2.getFamiliarityScore() - o1.getFamiliarityScore();
+        return o2Priority - o1Priority;
+    }
+
+    // calculate priority score for a given word
+    // based on complexity, familiarity, and source
+    // currently simple
+    public int calculatePriorityScore(WordWrapper wordWrapper) {
+        int priorityScore = 1;
+
+        if (wordWrapper.parentSavedBy.equals(BY_USER)) {
+            priorityScore++;
+        } else if (wordWrapper.parentSavedBy.equals(BY_NOBODY)) {
+            priorityScore--;
+        }
+
+        int wordLength = wordWrapper.word.length();
+
+        priorityScore *= wordLength;
+        priorityScore -= wordLength * wordWrapper.getFamiliarityScore();
+
+        return priorityScore;
     }
 }
 

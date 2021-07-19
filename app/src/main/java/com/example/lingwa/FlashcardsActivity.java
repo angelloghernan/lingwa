@@ -173,6 +173,7 @@ public class FlashcardsActivity extends AppCompatActivity {
     }
 
     private void showNextWord() {
+        // Show the loading indeterminate progress bar
         tvWord.setVisibility(View.INVISIBLE);
         pbWordLoading.setVisibility(View.VISIBLE);
         pbWordLoading.setActivated(true);
@@ -180,6 +181,8 @@ public class FlashcardsActivity extends AppCompatActivity {
         Translator.translateWord(currentWord, "es", "en", new Translator.TranslatorCallback() {
             @Override
             public void onTranslationSuccess(String translation) {
+                // Make sure the flashcard is unrotated and reset everything
+                // Make sure the loading progress bar is invisible
                 flFlashcard.setRotationY(0f);
                 tvWord.setVisibility(View.VISIBLE);
                 tvWord.setRotationY(0f);
