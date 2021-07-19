@@ -108,6 +108,7 @@ class SortByPriority implements Comparator<WordWrapper> {
     public static final String BY_ALGORITHM = "algorithm";
     public static final String BY_USER = "user";
     public static final String BY_NOBODY = "unsaved";
+    public static final int MAX_FAMILIARITY = 5;
 
     @Override
     public int compare(WordWrapper o1, WordWrapper o2) {
@@ -135,7 +136,7 @@ class SortByPriority implements Comparator<WordWrapper> {
         int wordLength = wordWrapper.word.length();
 
         priorityScore *= wordLength;
-        priorityScore -= wordLength * wordWrapper.getFamiliarityScore();
+        priorityScore -= wordLength * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
 
         return priorityScore;
     }
