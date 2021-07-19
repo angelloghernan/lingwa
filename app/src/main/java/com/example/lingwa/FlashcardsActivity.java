@@ -85,6 +85,13 @@ public class FlashcardsActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        updateDatabase();
+        createReturnIntent();
+        finish();
+    }
+
     View.OnClickListener submit = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -105,6 +112,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                     if (wordIndex > wordList.size() - 1) {
                         Toast.makeText(context, "Practice complete!", Toast.LENGTH_SHORT).show();
                         updateDatabase();
+                        createReturnIntent();
                         finish();
                         return;
                     }
@@ -116,12 +124,14 @@ public class FlashcardsActivity extends AppCompatActivity {
                     etAnswer.setText("");
 
                     showNextWord();
+                    return;
                 }
 
-                else if (answeredCorrectly) {
+                else if (answeredCorrectly && familiarityScore > 0) {
                     wordList.get(wordIndex).setFamiliarityScore(familiarityScore - 1);
-                    answeredCorrectly = false;
                 }
+
+                answeredCorrectly = false;
             }
     };
 
@@ -181,7 +191,7 @@ public class FlashcardsActivity extends AppCompatActivity {
         });
     }
 
-    public void updateDatabase() {
+    void updateDatabase() {
         List<UserJoinWord> ujwEntryList = new ArrayList<>();
 
         for (int i = 0; i < wordList.size(); i++) {
@@ -199,9 +209,9 @@ public class FlashcardsActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onBackPressed() {
-        updateDatabase();
-        finish();
+    void createReturnIntent() {
+        Intent intent = new Intent();
+        intent.putExtra("wordList", Parcels.wrap(wordList));
+        setResult(RESULT_OK, intent);
     }
 }

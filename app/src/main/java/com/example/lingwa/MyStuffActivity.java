@@ -1,7 +1,9 @@
 package com.example.lingwa;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import com.example.lingwa.models.Word;
 import com.example.lingwa.wrappers.WordWrapper;
 import com.google.gson.JsonArray;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
@@ -30,10 +33,13 @@ import java.util.Objects;
 public class MyStuffActivity extends AppCompatActivity {
 
     private static final String TAG = "MyStuffActivity";
+    public static final int FLASHCARD_REQUEST_CODE = 10;
     ListView lvSavedWords;
     Button btnPractice;
     Context context = this;
-    List<UserJoinWord> userWords = null;
+    List<UserJoinWord> ujwEntryList = null;
+    ArrayList<String> displayedWords = null;
+    ArrayList<WordWrapper> wordList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,43 +53,47 @@ public class MyStuffActivity extends AppCompatActivity {
         ujwQuery.include("word");
 
         try {
-            userWords = ujwQuery.find();
+            ujwEntryList = ujwQuery.find();
         } catch (ParseException e) {
             Log.e(TAG, e.toString());
         }
 
-        ArrayList<String> savedWords = new ArrayList<>();
-        if (userWords != null) {
-            for (int i = 0; i < userWords.size(); i++) {
-                    savedWords.add(Objects.requireNonNull(userWords.get(i).getWord().getOriginalWord()));
+        displayedWords = new ArrayList<>();
+        if (ujwEntryList != null) {
+            for (int i = 0; i < ujwEntryList.size(); i++) {
+                    displayedWords.add(Objects.requireNonNull(ujwEntryList.get(i).getWord().getOriginalWord()));
             }
         }
 
         ArrayAdapter<String> savedWordsAdapter =
-                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, savedWords);
+                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayedWords);
         lvSavedWords.setAdapter(savedWordsAdapter);
+
+
+        for (int i = 0; i < ujwEntryList.size(); i++) {
+            Word word = ujwEntryList.get(i).getWord();
+            WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId());
+            wordWrapper.setFamiliarityScore(ujwEntryList.get(i).getFamiliarityScore());
+            wordWrapper.setParentObjectId(ujwEntryList.get(i).getObjectId());
+            wordList.add(wordWrapper);
+        }
 
         btnPractice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, FlashcardsActivity.class);
-                ArrayList<WordWrapper> wordList = new ArrayList<>();
-                List<String> ujwObjectIds = new ArrayList<>();
-
-                for (int i = 0; i < userWords.size(); i++) {
-                    Word word = userWords.get(i).getWord();
-                    WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId());
-                    wordWrapper.setFamiliarityScore(userWords.get(i).getFamiliarityScore());
-                    wordWrapper.setParentObjectId(userWords.get(i).getObjectId());
-                    wordList.add(wordWrapper);
-
-                    ujwObjectIds.add(userWords.get(i).getObjectId());
-                }
-
                 intent.putExtra("wordList", Parcels.wrap(wordList));
                 startActivity(intent);
             }
         });
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK && requestCode == FLASHCARD_REQUEST_CODE && data != null) {
+            // get the new word (wrapper) list so we can use the familiarity scores
+            wordList = Parcels.unwrap(data.getParcelableExtra("wordList"));
+        }
     }
 }
