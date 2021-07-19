@@ -20,11 +20,14 @@ import android.widget.Toast;
 
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
+import com.example.lingwa.util.FamiliarityAlgo;
 import com.example.lingwa.util.Translator;
 import com.example.lingwa.wrappers.WordWrapper;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.parceler.Parcels;
 
@@ -51,7 +54,7 @@ public class FlashcardsActivity extends AppCompatActivity {
     boolean answeredCorrectly = true;
     Context context = this;
 
-    ArrayList<WordWrapper> wordList;
+    List<WordWrapper> wordList;
 
     final long FLIP_DURATION = 1000;
 
@@ -69,9 +72,12 @@ public class FlashcardsActivity extends AppCompatActivity {
         etAnswer = findViewById(R.id.etAnswer);
         btnSubmit = findViewById(R.id.btnSubmit);
 
-        Collections.shuffle(wordList);
+        FamiliarityAlgo familiarityAlgo = new FamiliarityAlgo();
+
+        wordList = familiarityAlgo.calculateQuizOrder(wordList);
+
         currentWord = wordList.get(0).word;
-        nextWord();
+        showNextWord();
 
         btnSubmit.setOnClickListener(submit);
         flFlashcard.setOnClickListener(onFlashcardClicked);
@@ -91,12 +97,14 @@ public class FlashcardsActivity extends AppCompatActivity {
 
                 if (answer.equals(wordTranslation)) {
                     if (answeredCorrectly && familiarityScore < 5) {
-                        wordList.get(wordIndex).setFamiliarityScore(familiarityScore);
+                        wordList.get(wordIndex).setFamiliarityScore(familiarityScore + 1);
                     }
 
                     wordIndex++;
+
                     if (wordIndex > wordList.size() - 1) {
                         Toast.makeText(context, "Practice complete!", Toast.LENGTH_SHORT).show();
+                        updateDatabase();
                         finish();
                         return;
                     }
@@ -107,8 +115,10 @@ public class FlashcardsActivity extends AppCompatActivity {
                     currentWord = wordList.get(wordIndex).word;
                     etAnswer.setText("");
 
-                    nextWord();
-                } else if (answeredCorrectly) {
+                    showNextWord();
+                }
+
+                else if (answeredCorrectly) {
                     wordList.get(wordIndex).setFamiliarityScore(familiarityScore - 1);
                     answeredCorrectly = false;
                 }
@@ -146,7 +156,7 @@ public class FlashcardsActivity extends AppCompatActivity {
         }, FLIP_DURATION/2);
     }
 
-    private void nextWord() {
+    private void showNextWord() {
         tvWord.setVisibility(View.INVISIBLE);
         pbWordLoading.setVisibility(View.VISIBLE);
         pbWordLoading.setActivated(true);
@@ -171,8 +181,7 @@ public class FlashcardsActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onBackPressed() {
+    public void updateDatabase() {
         List<UserJoinWord> ujwEntryList = new ArrayList<>();
 
         for (int i = 0; i < wordList.size(); i++) {
@@ -182,7 +191,17 @@ public class FlashcardsActivity extends AppCompatActivity {
             ujwEntry.setFamiliarityScore(word.getFamiliarityScore());
             ujwEntryList.add(ujwEntry);
         }
-        ParseObject.saveAllInBackground(ujwEntryList);
+        ParseObject.saveAllInBackground(ujwEntryList, new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                Toast.makeText(context, "done", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        updateDatabase();
         finish();
     }
 }
