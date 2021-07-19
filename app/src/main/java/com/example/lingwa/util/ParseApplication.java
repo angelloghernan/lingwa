@@ -1,7 +1,8 @@
-package com.example.lingwa;
+package com.example.lingwa.util;
 
 import android.app.Application;
 
+import com.example.lingwa.BuildConfig;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;

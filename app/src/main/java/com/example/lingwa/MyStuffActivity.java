@@ -68,10 +68,16 @@ public class MyStuffActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(context, FlashcardsActivity.class);
                 ArrayList<WordWrapper> wordList = new ArrayList<>();
+                List<String> ujwObjectIds = new ArrayList<>();
+
                 for (int i = 0; i < userWords.size(); i++) {
                     Word word = userWords.get(i).getWord();
                     WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId());
+                    wordWrapper.setFamiliarityScore(userWords.get(i).getFamiliarityScore());
+                    wordWrapper.setParentObjectId(userWords.get(i).getObjectId());
                     wordList.add(wordWrapper);
+
+                    ujwObjectIds.add(userWords.get(i).getObjectId());
                 }
 
                 intent.putExtra("wordList", Parcels.wrap(wordList));

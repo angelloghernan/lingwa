@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.UserManager;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -17,8 +18,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.models.Word;
 import com.example.lingwa.util.Translator;
 import com.example.lingwa.wrappers.WordWrapper;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import org.parceler.Parcels;
 
@@ -42,6 +48,7 @@ public class FlashcardsActivity extends AppCompatActivity {
     int wordIndex = 0;
     boolean flashcardFlipped = false;
     boolean flashcardFlipping = false;
+    boolean answeredCorrectly = true;
     Context context = this;
 
     ArrayList<WordWrapper> wordList;
@@ -53,8 +60,8 @@ public class FlashcardsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flashcards);
 
-
         wordList = Parcels.unwrap(getIntent().getParcelableExtra("wordList"));
+
         pbFlashcardProgress = findViewById(R.id.pbFlashcardProgress);
         pbWordLoading = findViewById(R.id.pbWordLoading);
         flFlashcard = findViewById(R.id.flFlashcard);
@@ -80,7 +87,13 @@ public class FlashcardsActivity extends AppCompatActivity {
 
                 String answer = etAnswer.getText().toString().toLowerCase();
 
+                int familiarityScore = wordList.get(wordIndex).getFamiliarityScore();
+
                 if (answer.equals(wordTranslation)) {
+                    if (answeredCorrectly && familiarityScore < 5) {
+                        wordList.get(wordIndex).setFamiliarityScore(familiarityScore);
+                    }
+
                     wordIndex++;
                     if (wordIndex > wordList.size() - 1) {
                         Toast.makeText(context, "Practice complete!", Toast.LENGTH_SHORT).show();
@@ -93,7 +106,11 @@ public class FlashcardsActivity extends AppCompatActivity {
                     pbFlashcardProgress.setProgress(progress);
                     currentWord = wordList.get(wordIndex).word;
                     etAnswer.setText("");
+
                     nextWord();
+                } else if (answeredCorrectly) {
+                    wordList.get(wordIndex).setFamiliarityScore(familiarityScore - 1);
+                    answeredCorrectly = false;
                 }
             }
     };
@@ -108,7 +125,7 @@ public class FlashcardsActivity extends AppCompatActivity {
 
             if (!flashcardFlipped) {
                 flipFlashcard(180f, wordTranslation);
-
+                answeredCorrectly = false;
             } else {
                 flipFlashcard(360f, currentWord);
             }
@@ -141,6 +158,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                 tvWord.setVisibility(View.VISIBLE);
                 tvWord.setRotationY(0f);
                 tvWord.setText(currentWord);
+                answeredCorrectly = true;
                 wordTranslation = translation.toLowerCase();
                 pbWordLoading.setVisibility(View.INVISIBLE);
                 pbWordLoading.setActivated(false);
@@ -151,5 +169,20 @@ public class FlashcardsActivity extends AppCompatActivity {
                 Log.e(TAG, e.toString());
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        List<UserJoinWord> ujwEntryList = new ArrayList<>();
+
+        for (int i = 0; i < wordList.size(); i++) {
+            WordWrapper word = wordList.get(i);
+            UserJoinWord ujwEntry = ParseObject.createWithoutData(UserJoinWord.class,
+                    word.getParentObjectId());
+            ujwEntry.setFamiliarityScore(word.getFamiliarityScore());
+            ujwEntryList.add(ujwEntry);
+        }
+        ParseObject.saveAllInBackground(ujwEntryList);
+        finish();
     }
 }

@@ -169,7 +169,6 @@ public class ContentActivity extends AppCompatActivity {
                             return;
                         }
 
-
                         // If the entry doesn't exist, check if the word already exists in the Word table
                         // (should be quick because we already requested this data)
                         // If it exists, point to the entry. If not, create a new entry
@@ -177,7 +176,7 @@ public class ContentActivity extends AppCompatActivity {
                         innerQuery.getFirstInBackground(new GetCallback<Word>() {
                             @Override
                             public void done(Word wordEntry, ParseException e) {
-                                if (e != null) {
+                                if (e != null && e.getCode() != ParseException.OBJECT_NOT_FOUND) {
                                     Log.e(TAG, "Error checking Word table: " + e.toString());
                                 }
                                 if (wordEntry == null) {
