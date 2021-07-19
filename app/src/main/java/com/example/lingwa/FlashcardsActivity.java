@@ -199,15 +199,25 @@ public class FlashcardsActivity extends AppCompatActivity {
 
     void updateDatabase() {
         List<UserJoinWord> ujwEntryList = new ArrayList<>();
+        ParseUser currentUser = ParseUser.getCurrentUser();
 
         for (int i = 0; i < wordList.size(); i++) {
-            WordWrapper word = wordList.get(i);
-            if (word.getParentObjectId().equals("null")) {
-                continue;
+            WordWrapper wordWrapper = wordList.get(i);
+            UserJoinWord ujwEntry;
+
+            // if this word is an automatically created word (no entry for it as indicated by no parent object id),
+            // make a new UserJoinWord entry and Word entry for it.
+            // else, use the parent object id to get the entry
+            if (wordWrapper.getParentObjectId().equals("null")) {
+                Word wordEntry = new Word(wordWrapper.word);
+                ujwEntry = new UserJoinWord(currentUser, wordEntry,
+                        wordWrapper.getFamiliarityScore(), "algorithm");
+            } else {
+                ujwEntry = ParseUser.createWithoutData(UserJoinWord.class,
+                        wordWrapper.getParentObjectId());
             }
-            UserJoinWord ujwEntry = ParseObject.createWithoutData(UserJoinWord.class,
-                    word.getParentObjectId());
-            ujwEntry.setFamiliarityScore(word.getFamiliarityScore());
+
+            ujwEntry.setFamiliarityScore(wordWrapper.getFamiliarityScore());
             ujwEntryList.add(ujwEntry);
         }
         ParseObject.saveAllInBackground(ujwEntryList, new SaveCallback() {

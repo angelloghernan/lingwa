@@ -61,7 +61,10 @@ public class MyStuffActivity extends AppCompatActivity {
         displayedWords = new ArrayList<>();
         if (ujwEntryList != null) {
             for (int i = 0; i < ujwEntryList.size(); i++) {
-                    displayedWords.add(Objects.requireNonNull(ujwEntryList.get(i).getWord().getOriginalWord()));
+                    UserJoinWord ujwEntry = ujwEntryList.get(i);
+                    if (ujwEntry.getSavedBy().equals("user")) {
+                        displayedWords.add(Objects.requireNonNull(ujwEntry.getWord().getOriginalWord()));
+                    }
             }
         }
 
