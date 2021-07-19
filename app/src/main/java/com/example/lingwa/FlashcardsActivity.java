@@ -29,8 +29,10 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
 import org.parceler.Parcels;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -74,7 +76,11 @@ public class FlashcardsActivity extends AppCompatActivity {
 
         FamiliarityAlgo familiarityAlgo = new FamiliarityAlgo();
 
-        wordList = familiarityAlgo.calculateQuizOrder(wordList);
+        try {
+            wordList = familiarityAlgo.calculateQuizOrder(wordList, 15);
+        } catch (JSONException | ParseException e) {
+            Log.e(TAG, "error getting words from algo: " + e.toString());
+        }
 
         currentWord = wordList.get(0).word;
         showNextWord();
@@ -196,6 +202,9 @@ public class FlashcardsActivity extends AppCompatActivity {
 
         for (int i = 0; i < wordList.size(); i++) {
             WordWrapper word = wordList.get(i);
+            if (word.getParentObjectId().equals("null")) {
+                continue;
+            }
             UserJoinWord ujwEntry = ParseObject.createWithoutData(UserJoinWord.class,
                     word.getParentObjectId());
             ujwEntry.setFamiliarityScore(word.getFamiliarityScore());
@@ -211,7 +220,10 @@ public class FlashcardsActivity extends AppCompatActivity {
 
     void createReturnIntent() {
         Intent intent = new Intent();
-        intent.putExtra("wordList", Parcels.wrap(wordList));
+        // For some reason, Parceler can't parcel sublists, so this is done
+        // to make sure that the word list can be passed through
+        ArrayList<WordWrapper> tempWordList = new ArrayList<>(wordList);
+        intent.putExtra("wordList", Parcels.wrap(tempWordList));
         setResult(RESULT_OK, intent);
     }
 }

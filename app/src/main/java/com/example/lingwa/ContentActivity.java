@@ -48,6 +48,7 @@ import java.util.List;
 public class ContentActivity extends AppCompatActivity {
 
     private static final String TAG = "ContentActivity";
+    public static final String KEY_RECENT_ARTICLES = "recentArticles";
     private final Context context = this;
     Button btnUpload;
     TextView tvBody;
@@ -61,6 +62,8 @@ public class ContentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_content);
 
         contentWrapper = Parcels.unwrap(getIntent().getParcelableExtra("content"));
+        ParseUser.getCurrentUser().addUnique(KEY_RECENT_ARTICLES, contentWrapper.objectId);
+        ParseUser.getCurrentUser().saveInBackground();
         // Content content = (Content) Content.createWithoutData("content", contentWrapper.objectId);
 
         final FragmentManager fragmentManager = getSupportFragmentManager();
