@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
@@ -68,6 +69,11 @@ public class MyStuffActivity extends AppCompatActivity {
             }
         }
 
+        if (displayedWords.size() < 1) {
+            displayedWords.add("No words saved!");
+            displayedWords.add("Press and hold on words while reading to save words.");
+        }
+
         ArrayAdapter<String> savedWordsAdapter =
                 new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayedWords);
         lvSavedWords.setAdapter(savedWordsAdapter);
@@ -85,6 +91,10 @@ public class MyStuffActivity extends AppCompatActivity {
         btnPractice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ParseUser.getCurrentUser().getJSONArray("recentArticles") == null) {
+                    Toast.makeText(context, "Please read an article before practicing!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Intent intent = new Intent(context, FlashcardsActivity.class);
                 intent.putExtra("wordList", Parcels.wrap(wordList));
                 startActivity(intent);

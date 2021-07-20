@@ -208,7 +208,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                 List<UserJoinWord> ujwEntryList = new ArrayList<>();
                 ParseUser currentUser = ParseUser.getCurrentUser();
 
-                for (int i = 0; i < wordList.size(); i++) {
+                for (int i = 0; i <= wordIndex; i++) {
                     WordWrapper wordWrapper = wordList.get(i);
                     UserJoinWord ujwEntry;
 

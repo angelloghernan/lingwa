@@ -235,7 +235,7 @@ public class ContentActivity extends AppCompatActivity {
                     return;
                 }
 
-                Toast.makeText(context, "Success!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Word saved", Toast.LENGTH_SHORT).show();
             }
     };
 }
