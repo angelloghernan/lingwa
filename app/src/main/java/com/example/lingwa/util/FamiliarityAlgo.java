@@ -12,10 +12,13 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class FamiliarityAlgo {
     public static final String KEY_RECENT_ARTICLES = "recentArticles";
@@ -33,37 +36,14 @@ public class FamiliarityAlgo {
             }
         }
 
-        int size = wordWrapperList.size();
-
-        List<WordWrapper> newList = new ArrayList<>(size);
-
-        // Sort in descending order of familiarity
+        // Sort in descending order of priority
         Collections.sort(wordWrapperList, new SortByPriority());
 
-        int remainder = size % 3;
-
-        int divider = (int) size / 3;
-
-        for (int i = 0; i < divider; i++) {
-            // get a familiar word
-            newList.add(wordWrapperList.get(i));
-            // get a less familiar word
-            newList.add(wordWrapperList.get(divider + i));
-            // get an unfamiliar word
-            newList.add(wordWrapperList.get((divider * 2) + i));
-        }
-
-        for (int i = 0; i < remainder; i++) {
-            // add the two least familiar words at the end if
-            // there are any left
-            newList.add(wordWrapperList.get(size - (i + 1)));
-        }
-
         if (articleFetchFailed) {
-            return newList;
+            return wordWrapperList;
         }
 
-        return newList.subList(0, numItems - 1);
+        return wordWrapperList.subList(0, numItems - 1);
     }
 
     public List<WordWrapper> getNewWords(int numWords) throws JSONException, ParseException {
@@ -91,13 +71,22 @@ public class FamiliarityAlgo {
 
         List<WordWrapper> newWords = new ArrayList<>();
 
+        Set<String> set = new HashSet<>();
+
         for (int i = 0; i < numWords; i++) {
+            if (set.contains(contentBodyWords[i])) {
+                numWords++;
+                continue;
+            }
+
             Word word = new Word(contentBodyWords[i]);
             word.setObjectId("null");
             WordWrapper wordWrapper = new WordWrapper(contentBodyWords[i], "null", "unsaved");
             wordWrapper.setFamiliarityScore(1);
             wordWrapper.setParentObjectId("null");
             newWords.add(wordWrapper);
+
+            set.add(contentBodyWords[i]);
         }
 
         return newWords;
@@ -136,7 +125,7 @@ class SortByPriority implements Comparator<WordWrapper> {
         int wordLength = wordWrapper.word.length();
 
         priorityScore *= wordLength;
-        priorityScore -= wordLength * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
+        priorityScore += 5 * wordLength * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
 
         return priorityScore;
     }
