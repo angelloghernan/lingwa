@@ -9,12 +9,17 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.Layout;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextPaint;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
@@ -39,6 +44,9 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.skydoves.balloon.ArrowOrientation;
+import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonSizeSpec;
 
 import org.parceler.Parcels;
 
@@ -55,12 +63,15 @@ public class ContentActivity extends AppCompatActivity {
     TextView tvBody;
     ContentWrapper contentWrapper;
     Paginator paginator;
+    LongClickLinkMovementMethod bodyMovementMethod;
     int currentPage = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_content);
+
+        bodyMovementMethod = (LongClickLinkMovementMethod) LongClickLinkMovementMethod.getInstance();
 
         contentWrapper = Parcels.unwrap(getIntent().getParcelableExtra("content"));
         ParseUser.getCurrentUser().addUnique(KEY_RECENT_ARTICLES, contentWrapper.objectId);
@@ -99,6 +110,7 @@ public class ContentActivity extends AppCompatActivity {
         });
 
         tvBody = findViewById(R.id.tvBody);
+
         final ViewTreeObserver observer = tvBody.getViewTreeObserver();
         observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -123,7 +135,7 @@ public class ContentActivity extends AppCompatActivity {
         text = text.trim();
         // Long link movement method needed so that the text is highlighted when pressed and
         // the onClick and onLongClick functions are fired when clicked and held respectively
-        tvBody.setMovementMethod(LongClickLinkMovementMethod.getInstance());
+        tvBody.setMovementMethod(bodyMovementMethod);
         tvBody.setText(text, TextView.BufferType.SPANNABLE);
         // Create a spannable so that we can edit the properties of individual words
         Spannable spannable = (Spannable) tvBody.getText();
@@ -146,6 +158,7 @@ public class ContentActivity extends AppCompatActivity {
     private LongClickableSpan getLongClickableSpan(String spanWord) {
         return new LongClickableSpan() {
             final String word = spanWord;
+            final ClickableSpan span = this;
 
             // On a long click, make an entry into the UserJoinWord table using the User and span's word.
             // If such an entry already exists, inform the user.
@@ -200,16 +213,43 @@ public class ContentActivity extends AppCompatActivity {
             // let the user see the translation in an AlertDialog.
             @Override
             public void onClick(@NonNull View widget) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
                 Translator.translateWord(word, "es", "en", new Translator.TranslatorCallback() {
                     @Override
                     public void onTranslationSuccess(String translation) {
-                        builder.setMessage(translation)
-                                .setTitle("Translation");
-                        AlertDialog dialog = builder.create();
+                        if (translation == null) {
+                            return;
+                        }
+                        ArrowOrientation arrowOrientation = ArrowOrientation.TOP;
+
+                        int arrowSize = 10;
+                        Rect rect = getSpanCoordinateRect(tvBody, span);
+                        int y = rect.top;
+
+                        if (rect.top - arrowSize < 0) {
+                            arrowOrientation = ArrowOrientation.BOTTOM;
+                            y = rect.bottom + 100;
+                        }
+
+                        Balloon translationDisplay = new Balloon.Builder(context)
+                                .setArrowSize(arrowSize)
+                                .setArrowOrientation(arrowOrientation)
+                                .setWidth(BalloonSizeSpec.WRAP)
+                                .setTextSize(18f)
+                                .setCornerRadius(4f)
+                                .setBackgroundColorResource(R.color.dark_green)
+                                .setAlpha(0.9f)
+                                .setText(translation)
+                                .build();
+
                         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
-                            dialog.show();
+                            SpannableString completeText = (SpannableString) tvBody.getText();
+
+                            double clickedTextStartOffset = completeText.getSpanStart(span);
+                            // double clickedTextEndOffset = completeText.getSpanEnd(span);
+                            double clickedTextStartX = tvBody.getLayout().getPrimaryHorizontal((int) clickedTextStartOffset);
+
+                            translationDisplay.show(widget, (int) clickedTextStartX, y);
                         }
                     }
 
@@ -239,4 +279,22 @@ public class ContentActivity extends AppCompatActivity {
                 Toast.makeText(context, "Word saved", Toast.LENGTH_SHORT).show();
             }
     };
+
+    private Rect getSpanCoordinateRect(TextView textView, ClickableSpan span) {
+        Rect textViewRect = new Rect();
+
+        SpannableString completeText = (SpannableString) textView.getText();
+        Layout textViewLayout = textView.getLayout();
+
+        double clickedTextStartOffset = completeText.getSpanStart(span);
+        // double clickedTextEndOffset = completeText.getSpanEnd(span);
+        // double clickedTextStartX = textViewLayout.getPrimaryHorizontal((int) clickedTextStartOffset);
+        // double clickedTextEndX = textViewLayout.getPrimaryHorizontal((int) clickedTextEndOffset);
+
+        int lineStartOffset = textViewLayout.getLineForOffset((int) clickedTextStartOffset);
+        // int lineEndOffset = textViewLayout.getLineForOffset((int) clickedTextEndOffset);
+        textViewLayout.getLineBounds(lineStartOffset, textViewRect);
+
+        return textViewRect;
+    }
 }

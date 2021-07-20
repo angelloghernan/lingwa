@@ -16,6 +16,8 @@ public class LongClickLinkMovementMethod extends LinkMovementMethod {
     private Handler mLongClickHandler;
     private static int LONG_CLICK_TIME = 750;
     private boolean mIsLongPressed = false;
+    public int clickX = 0;
+    public int clickY = 0;
 
     @Override
     public boolean onTouchEvent(final TextView widget, Spannable buffer,
@@ -32,6 +34,8 @@ public class LongClickLinkMovementMethod extends LinkMovementMethod {
                 action == MotionEvent.ACTION_DOWN) {
             int x = (int) event.getX();
             int y = (int) event.getY();
+            clickX = x;
+            clickY = y;
 
             x -= widget.getTotalPaddingLeft();
             y -= widget.getTotalPaddingTop();

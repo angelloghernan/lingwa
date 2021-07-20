@@ -72,7 +72,8 @@ public class Translator {
             }
             String finalTranslation = translation;
             handler.post(() -> {
-                callback.onTranslationSuccess(finalTranslation);
+                if (finalTranslation != null)
+                    callback.onTranslationSuccess(finalTranslation);
             });
         });
     }
