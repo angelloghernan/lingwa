@@ -46,6 +46,7 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.skydoves.balloon.ArrowOrientation;
 import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 
 import org.parceler.Parcels;
@@ -238,8 +239,9 @@ public class ContentActivity extends AppCompatActivity {
                                 .setTextSize(18f)
                                 .setCornerRadius(4f)
                                 .setBackgroundColorResource(R.color.dark_green)
-                                .setAlpha(0.9f)
+                                .setTextColorResource(R.color.white)
                                 .setText(translation)
+                                .setBalloonAnimation(BalloonAnimation.CIRCULAR)
                                 .build();
 
                         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
