@@ -227,5 +227,9 @@ Message
    * (READ/Get): Alternatively, get article information to be displayed
    * (POST/Update): If user saves a word, update savedWord
 
+Algorithm Overview:
+Get words for the user to practice, based on the words the user has saved -- or if there is not enough, from the words from the most article(s) they have read
+Select ordering in word list based on priority, where words that the user has gotten right many times are given very low priority, words they have saved are given slightly higher priority, and longer words are given slightly more priority
+Select the top X words for the user to practice
 
 original at https://hackmd.io/xSUJQve6Q0yqeiNziqIqQQ
