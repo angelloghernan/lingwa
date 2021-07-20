@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.lingwa.models.Content;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
 import com.example.lingwa.util.LongClickLinkMovementMethod;
@@ -183,7 +184,7 @@ public class ContentActivity extends AppCompatActivity {
                                     Log.e(TAG, "Error checking Word table: " + e.toString());
                                 }
                                 if (wordEntry == null) {
-                                    wordEntry = new Word(word);
+                                    wordEntry = new Word(word, contentWrapper.objectId);
                                 }
 
                                 UserJoinWord ujwEntry = new UserJoinWord(currentUser, wordEntry, 0, "user");

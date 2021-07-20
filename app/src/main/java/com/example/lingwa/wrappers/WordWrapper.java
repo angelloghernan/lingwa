@@ -7,16 +7,18 @@ public class WordWrapper {
     public String word;
     public String objectId;
     public String parentSavedBy;
+    public String originatesFromId;
     String parentObjectId;
     int familiarityScore;
 
     public WordWrapper() {
 
     }
-    public WordWrapper(String word, String objectId, String parentSavedBy) {
+    public WordWrapper(String word, String objectId, String parentSavedBy, String originatesFromId) {
         this.word = word;
         this.objectId = objectId;
         this.parentSavedBy = parentSavedBy;
+        this.originatesFromId = originatesFromId;
     }
 
     public void setFamiliarityScore(int familiarityScore) {

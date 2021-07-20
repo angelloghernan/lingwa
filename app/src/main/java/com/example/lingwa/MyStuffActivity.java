@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.lingwa.models.UserJoinWord;
@@ -37,6 +38,7 @@ public class MyStuffActivity extends AppCompatActivity {
     public static final int FLASHCARD_REQUEST_CODE = 10;
     ListView lvSavedWords;
     Button btnPractice;
+    ProgressBar pbStuffLoading;
     Context context = this;
     List<UserJoinWord> ujwEntryList = null;
     ArrayList<String> displayedWords = null;
@@ -48,6 +50,7 @@ public class MyStuffActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_stuff);
         lvSavedWords = findViewById(R.id.lvSavedWords);
         btnPractice = findViewById(R.id.btnPractice);
+        pbStuffLoading = findViewById(R.id.pbStuffLoading);
 
         ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
         ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
@@ -82,7 +85,7 @@ public class MyStuffActivity extends AppCompatActivity {
         for (int i = 0; i < ujwEntryList.size(); i++) {
             Word word = ujwEntryList.get(i).getWord();
             WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(),
-                    ujwEntryList.get(i).getSavedBy());
+                    ujwEntryList.get(i).getSavedBy(), word.getOriginatesFrom().getObjectId());
             wordWrapper.setFamiliarityScore(ujwEntryList.get(i).getFamiliarityScore());
             wordWrapper.setParentObjectId(ujwEntryList.get(i).getObjectId());
             wordList.add(wordWrapper);
@@ -95,6 +98,7 @@ public class MyStuffActivity extends AppCompatActivity {
                     Toast.makeText(context, "Please read an article before practicing!", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                pbStuffLoading.setVisibility(View.VISIBLE);
                 Intent intent = new Intent(context, FlashcardsActivity.class);
                 intent.putExtra("wordList", Parcels.wrap(wordList));
                 startActivity(intent);

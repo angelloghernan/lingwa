@@ -1,15 +1,19 @@
 package com.example.lingwa.util;
 
+import android.util.Log;
+
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Word;
 import com.example.lingwa.wrappers.WordWrapper;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,16 +53,42 @@ public class FamiliarityAlgo {
     public List<WordWrapper> getNewWords(int numWords) throws JSONException, ParseException {
         JSONArray jsonArray = ParseUser.getCurrentUser().getJSONArray(KEY_RECENT_ARTICLES);
         String contentId;
+
+
         if (jsonArray != null) {
             contentId = jsonArray.getString(0);
         } else {
             return null;
         }
 
+        Content content = ParseObject.createWithoutData(Content.class, contentId);
+        ParseQuery<Word> originatesFromQuery = ParseQuery.getQuery(Word.class);
+        originatesFromQuery.whereEqualTo(Word.KEY_ORIGINATES_FROM, content);
+
+        try {
+            List<Word> words = originatesFromQuery.find();
+            List<WordWrapper> newWords = new ArrayList<>();
+            for (int i = 0; i < numWords && i < words.size(); i++) {
+                Word word = words.get(i);
+                WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(), "algorithm",
+                        content.getObjectId());
+                newWords.add(wordWrapper);
+            }
+            if (numWords < words.size()) {
+                return newWords;
+            } else {
+                numWords -= words.size();
+            }
+        } catch (ParseException e) {
+            if (e.getCode() != ParseException.OBJECT_NOT_FOUND) {
+                Log.e(TAG, "Error fetching like-words from article: " + e.toString());
+            }
+        }
+
         ParseQuery<Content> contentQuery = ParseQuery.getQuery(Content.class);
         contentQuery.whereEqualTo(Content.KEY_OBJECT_ID, contentId);
 
-        Content content = contentQuery.getFirst();
+        content = contentQuery.getFirst();
 
         // remove any non-letter characters from the body and split into words
         // note: in the future, this is going to require taking only the first X characters
@@ -79,9 +109,8 @@ public class FamiliarityAlgo {
                 continue;
             }
 
-            Word word = new Word(contentBodyWords[i]);
-            word.setObjectId("null");
-            WordWrapper wordWrapper = new WordWrapper(contentBodyWords[i], "null", "unsaved");
+            WordWrapper wordWrapper = new WordWrapper(contentBodyWords[i], "null", "unsaved",
+                    content.getObjectId());
             wordWrapper.setFamiliarityScore(1);
             wordWrapper.setParentObjectId("null");
             newWords.add(wordWrapper);

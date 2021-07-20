@@ -202,52 +202,49 @@ public class FlashcardsActivity extends AppCompatActivity {
     }
 
     void updateDatabase() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<UserJoinWord> ujwEntryList = new ArrayList<>();
-                ParseUser currentUser = ParseUser.getCurrentUser();
+        new Thread(() -> {
+            List<UserJoinWord> ujwEntryList = new ArrayList<>();
+            ParseUser currentUser = ParseUser.getCurrentUser();
 
-                for (int i = 0; i <= wordIndex; i++) {
-                    WordWrapper wordWrapper = wordList.get(i);
-                    UserJoinWord ujwEntry;
+            for (int i = 0; i < wordIndex; i++) {
+                WordWrapper wordWrapper = wordList.get(i);
+                UserJoinWord ujwEntry;
 
-                    // if this word is an automatically created word (no entry for it as indicated by no parent object id),
-                    // make a new UserJoinWord entry and Word entry for it.
-                    // else, use the parent object id to get the entry
-                    if (wordWrapper.getParentObjectId().equals("null")) {
-                        ParseQuery<Word> wordQuery = ParseQuery.getQuery(Word.class);
-                        wordQuery.whereEqualTo(Word.KEY_ORIGINAL_WORD, wordWrapper.word);
-                        Word wordEntry;
-                        try {
-                            wordEntry = wordQuery.getFirst();
-                        } catch (ParseException e) {
-                            if (e.getCode() == ParseException.OBJECT_NOT_FOUND) {
-                                wordEntry = new Word(wordWrapper.word);
-                            } else {
-                                Log.e(TAG, "Error making new word entry: " + e.toString());
-                                continue;
-                            }
+                // if this word is an automatically created word (no entry for it as indicated by no parent object id),
+                // make a new UserJoinWord entry and Word entry for it.
+                // else, use the parent object id to get the entry
+                if (wordWrapper.getParentObjectId().equals("null")) {
+                    ParseQuery<Word> wordQuery = ParseQuery.getQuery(Word.class);
+                    wordQuery.whereEqualTo(Word.KEY_ORIGINAL_WORD, wordWrapper.word);
+                    Word wordEntry;
+                    try {
+                        wordEntry = wordQuery.getFirst();
+                    } catch (ParseException e) {
+                        if (e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+                            wordEntry = new Word(wordWrapper.word, wordWrapper.originatesFromId);
+                        } else {
+                            Log.e(TAG, "Error making new word entry: " + e.toString());
+                            continue;
                         }
-                        ujwEntry = new UserJoinWord(currentUser, wordEntry,
-                                wordWrapper.getFamiliarityScore(), "algorithm");
-                    } else {
-                        ujwEntry = ParseUser.createWithoutData(UserJoinWord.class,
-                                wordWrapper.getParentObjectId());
                     }
-
-                    ujwEntry.setFamiliarityScore(wordWrapper.getFamiliarityScore());
-                    ujwEntryList.add(ujwEntry);
-                }
-                try {
-                    ParseObject.saveAll(ujwEntryList);
-                } catch (ParseException e) {
-                    Log.e(TAG, "Error saving words " + e.toString());
+                    ujwEntry = new UserJoinWord(currentUser, wordEntry,
+                            wordWrapper.getFamiliarityScore(), "algorithm");
+                } else {
+                    ujwEntry = ParseUser.createWithoutData(UserJoinWord.class,
+                            wordWrapper.getParentObjectId());
                 }
 
-                Log.d(TAG, "Saved words successfully");
-
+                ujwEntry.setFamiliarityScore(wordWrapper.getFamiliarityScore());
+                ujwEntryList.add(ujwEntry);
             }
+            try {
+                ParseObject.saveAll(ujwEntryList);
+            } catch (ParseException e) {
+                Log.e(TAG, "Error saving words " + e.toString());
+            }
+
+            Log.d(TAG, "Saved words successfully");
+
         }).start();
     }
 
