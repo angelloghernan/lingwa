@@ -51,6 +51,7 @@ public class MyStuffActivity extends AppCompatActivity {
         lvSavedWords = findViewById(R.id.lvSavedWords);
         btnPractice = findViewById(R.id.btnPractice);
         pbStuffLoading = findViewById(R.id.pbStuffLoading);
+        pbStuffLoading.setActivated(false);
 
         ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
         ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
@@ -99,6 +100,7 @@ public class MyStuffActivity extends AppCompatActivity {
                     return;
                 }
                 pbStuffLoading.setVisibility(View.VISIBLE);
+                pbStuffLoading.setActivated(true);
                 Intent intent = new Intent(context, FlashcardsActivity.class);
                 intent.putExtra("wordList", Parcels.wrap(wordList));
                 startActivity(intent);
@@ -110,6 +112,8 @@ public class MyStuffActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && requestCode == FLASHCARD_REQUEST_CODE && data != null) {
+            pbStuffLoading.setVisibility(View.INVISIBLE);
+            pbStuffLoading.setActivated(false);
             // get the new word (wrapper) list so we can use the familiarity scores
             wordList = Parcels.unwrap(data.getParcelableExtra("wordList"));
         }

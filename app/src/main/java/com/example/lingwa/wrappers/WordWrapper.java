@@ -8,7 +8,7 @@ public class WordWrapper {
     public String objectId;
     public String parentSavedBy;
     public String originatesFromId;
-    String parentObjectId;
+    String parentObjectId = "null";
     int familiarityScore;
 
     public WordWrapper() {

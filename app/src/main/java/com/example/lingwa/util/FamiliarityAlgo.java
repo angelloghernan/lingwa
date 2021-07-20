@@ -65,6 +65,8 @@ public class FamiliarityAlgo {
         ParseQuery<Word> originatesFromQuery = ParseQuery.getQuery(Word.class);
         originatesFromQuery.whereEqualTo(Word.KEY_ORIGINATES_FROM, content);
 
+        Set<String> wordsAlreadyAdded = new HashSet<>();
+
         try {
             List<Word> words = originatesFromQuery.find();
             List<WordWrapper> newWords = new ArrayList<>();
@@ -72,7 +74,10 @@ public class FamiliarityAlgo {
                 Word word = words.get(i);
                 WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(), "algorithm",
                         content.getObjectId());
+                wordWrapper.setParentObjectId("null");
+                wordWrapper.setFamiliarityScore(1);
                 newWords.add(wordWrapper);
+                wordsAlreadyAdded.add(wordWrapper.word);
             }
             if (numWords < words.size()) {
                 return newWords;
@@ -101,10 +106,8 @@ public class FamiliarityAlgo {
 
         List<WordWrapper> newWords = new ArrayList<>();
 
-        Set<String> set = new HashSet<>();
-
         for (int i = 0; i < numWords; i++) {
-            if (set.contains(contentBodyWords[i])) {
+            if (wordsAlreadyAdded.contains(contentBodyWords[i])) {
                 numWords++;
                 continue;
             }
@@ -115,7 +118,7 @@ public class FamiliarityAlgo {
             wordWrapper.setParentObjectId("null");
             newWords.add(wordWrapper);
 
-            set.add(contentBodyWords[i]);
+            wordsAlreadyAdded.add(contentBodyWords[i]);
         }
 
         return newWords;
