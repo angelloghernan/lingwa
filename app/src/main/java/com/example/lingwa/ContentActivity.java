@@ -23,6 +23,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +46,7 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.skydoves.balloon.ArrowOrientation;
+import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
@@ -214,41 +216,41 @@ public class ContentActivity extends AppCompatActivity {
             // let the user see the translation in an AlertDialog.
             @Override
             public void onClick(@NonNull View widget) {
-
                 Translator.translateWord(word, "es", "en", new Translator.TranslatorCallback() {
                     @Override
                     public void onTranslationSuccess(String translation) {
                         if (translation == null) {
                             return;
                         }
-                        ArrowOrientation arrowOrientation = ArrowOrientation.TOP;
-
-                        int arrowSize = 10;
-                        Rect rect = getSpanCoordinateRect(tvBody, span);
-                        int y = rect.top;
-
-                        if (rect.top - arrowSize < 0) {
-                            arrowOrientation = ArrowOrientation.BOTTOM;
-                            y = rect.bottom + 100;
-                        }
-
-                        Balloon translationDisplay = new Balloon.Builder(context)
-                                .setArrowSize(arrowSize)
-                                .setArrowOrientation(arrowOrientation)
-                                .setWidth(BalloonSizeSpec.WRAP)
-                                .setTextSize(18f)
-                                .setCornerRadius(4f)
-                                .setBackgroundColorResource(R.color.dark_green)
-                                .setTextColorResource(R.color.white)
-                                .setText(translation)
-                                .setBalloonAnimation(BalloonAnimation.CIRCULAR)
-                                .build();
 
                         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
                             SpannableString completeText = (SpannableString) tvBody.getText();
+                            ArrowOrientation arrowOrientation = ArrowOrientation.TOP;
+
+                            int arrowSize = 10;
+                            Rect rect = getSpanCoordinateRect(tvBody, span);
+                            int y = rect.top;
+
+                            if (rect.top - arrowSize < 0) {
+                                arrowOrientation = ArrowOrientation.BOTTOM;
+                                y = rect.bottom + rect.height() + arrowSize;
+                            }
+
+                            Balloon translationDisplay = new Balloon.Builder(context)
+                                    .setArrowSize(arrowSize)
+                                    .setArrowOrientation(arrowOrientation)
+                                    .setWidth(BalloonSizeSpec.WRAP)
+                                    .setCornerRadius(4f)
+                                    .setBackgroundColorResource(R.color.dark_green)
+                                    .setTextColorResource(R.color.white)
+                                    .setTextSize(18f)
+                                    .setText(translation)
+                                    .setArrowPosition(0.5f)
+                                    .setArrowPositionRules(ArrowPositionRules.ALIGN_BALLOON)
+                                    .setBalloonAnimation(BalloonAnimation.CIRCULAR)
+                                    .build();
 
                             double clickedTextStartOffset = completeText.getSpanStart(span);
-                            // double clickedTextEndOffset = completeText.getSpanEnd(span);
                             double clickedTextStartX = tvBody.getLayout().getPrimaryHorizontal((int) clickedTextStartOffset);
 
                             translationDisplay.show(widget, (int) clickedTextStartX, y);
@@ -291,7 +293,6 @@ public class ContentActivity extends AppCompatActivity {
         double clickedTextStartOffset = completeText.getSpanStart(span);
         // double clickedTextEndOffset = completeText.getSpanEnd(span);
         // double clickedTextStartX = textViewLayout.getPrimaryHorizontal((int) clickedTextStartOffset);
-        // double clickedTextEndX = textViewLayout.getPrimaryHorizontal((int) clickedTextEndOffset);
 
         int lineStartOffset = textViewLayout.getLineForOffset((int) clickedTextStartOffset);
         // int lineEndOffset = textViewLayout.getLineForOffset((int) clickedTextEndOffset);

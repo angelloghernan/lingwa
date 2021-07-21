@@ -17,6 +17,8 @@ import com.parse.ParseFile;
 
 import java.util.List;
 
+import me.samlss.broccoli.Broccoli;
+
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
 
     Context context;

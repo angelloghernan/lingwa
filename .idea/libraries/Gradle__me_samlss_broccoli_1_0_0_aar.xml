@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: me.samlss:broccoli:1.0.0@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/8d988694880f62fd9375a32d67aec6a5/broccoli-1.0.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/8d988694880f62fd9375a32d67aec6a5/broccoli-1.0.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/8d988694880f62fd9375a32d67aec6a5/broccoli-1.0.0/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/me.samlss/broccoli/1.0.0/f7e9a65177ab983ce2ff48ec48d28f859decdfa7/broccoli-1.0.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/me.samlss/broccoli/1.0.0/d00a1f895b8925bdcdad336006c53fa40f64bb76/broccoli-1.0.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

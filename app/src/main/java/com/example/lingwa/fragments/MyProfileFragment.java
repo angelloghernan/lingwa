@@ -24,6 +24,8 @@ import org.w3c.dom.Text;
 
 import java.util.Objects;
 
+import me.samlss.broccoli.Broccoli;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link MyProfileFragment#newInstance} factory method to
@@ -90,6 +92,8 @@ public class MyProfileFragment extends Fragment {
         tvProfileBio = view.findViewById(R.id.tvProfileBio);
         tvProfileUsername = view.findViewById(R.id.tvProfileUsername);
         ivProfilePicture = view.findViewById(R.id.ivProfilePicture);
+        Broccoli broccoli = new Broccoli();
+        broccoli.addPlaceholders(tvProfileBio, tvProfileUsername, ivProfilePicture);
 
         ParseUser currentUser = ParseUser.getCurrentUser();
         tvProfileUsername.setText(currentUser.getUsername());
@@ -105,6 +109,8 @@ public class MyProfileFragment extends Fragment {
                     .circleCrop()
                     .into(ivProfilePicture);
         }
+
+        broccoli.clearAllPlaceholders();
 
         btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
