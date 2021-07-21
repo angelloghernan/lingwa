@@ -32,7 +32,7 @@ public class FamiliarityAlgo {
     public List<WordWrapper> calculateQuizOrder(List<WordWrapper> wordWrapperList, int numItems) throws JSONException, ParseException {
 
         if (numItems > wordWrapperList.size()) {
-            List<WordWrapper> newWords = getNewWords(numItems - wordWrapperList.size());
+            List<WordWrapper> newWords = getNewWords(numItems - wordWrapperList.size(), wordWrapperList);
             if (newWords != null) {
                 wordWrapperList.addAll(newWords);
             } else {
@@ -50,7 +50,7 @@ public class FamiliarityAlgo {
         return wordWrapperList.subList(0, numItems - 1);
     }
 
-    public List<WordWrapper> getNewWords(int numWords) throws JSONException, ParseException {
+    public List<WordWrapper> getNewWords(int numWords, List<WordWrapper> wordWrapperList) throws JSONException, ParseException {
         JSONArray jsonArray = ParseUser.getCurrentUser().getJSONArray(KEY_RECENT_ARTICLES);
         String contentId;
 
@@ -66,6 +66,10 @@ public class FamiliarityAlgo {
         originatesFromQuery.whereEqualTo(Word.KEY_ORIGINATES_FROM, content);
 
         Set<String> wordsAlreadyAdded = new HashSet<>();
+
+        for (int i = 0; i < wordWrapperList.size(); i++) {
+            wordsAlreadyAdded.add(wordWrapperList.get(i).word);
+        }
 
         try {
             List<Word> words = originatesFromQuery.find();
@@ -130,6 +134,7 @@ class SortByPriority implements Comparator<WordWrapper> {
     public static final String BY_USER = "user";
     public static final String BY_NOBODY = "unsaved";
     public static final int MAX_FAMILIARITY = 5;
+    public static final int MAX_STRUGGLE_INDEX = 5;
 
     @Override
     public int compare(WordWrapper o1, WordWrapper o2) {
@@ -156,6 +161,8 @@ class SortByPriority implements Comparator<WordWrapper> {
 
         priorityScore = wordLength;
         priorityScore += 5 * wordLength * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
+
+        priorityScore += 8 * (MAX_STRUGGLE_INDEX - wordWrapper.getStruggleIndex());
 
         if (wordWrapper.parentSavedBy.equals(BY_USER)) {
             priorityScore *= 2;

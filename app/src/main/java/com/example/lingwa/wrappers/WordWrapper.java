@@ -10,6 +10,7 @@ public class WordWrapper {
     public String originatesFromId;
     String parentObjectId = "null";
     int familiarityScore;
+    int struggleIndex = 0;
 
     public WordWrapper() {
 
@@ -23,6 +24,14 @@ public class WordWrapper {
 
     public void setFamiliarityScore(int familiarityScore) {
         this.familiarityScore = familiarityScore;
+    }
+
+    public void setStruggleIndex(int struggleIndex) {
+        this.struggleIndex = struggleIndex;
+    }
+
+    public int getStruggleIndex() {
+        return this.struggleIndex;
     }
 
     public int getFamiliarityScore() {

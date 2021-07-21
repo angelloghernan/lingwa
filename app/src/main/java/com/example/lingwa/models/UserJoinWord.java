@@ -11,6 +11,7 @@ public class UserJoinWord extends ParseObject {
     public static final String KEY_WORD = "word";
     public static final String KEY_FAMILIARITY_SCORE = "familiarityScore";
     public static final String KEY_SAVED_BY = "savedBy";
+    public static final String KEY_STRUGGLE_INDEX = "struggleIndex";
 
     public UserJoinWord() {
 
@@ -30,6 +31,11 @@ public class UserJoinWord extends ParseObject {
     public void setUser(ParseUser user) {
         put(KEY_USER, user);
     }
+
+    public int getStruggleIndex() {return getInt(KEY_STRUGGLE_INDEX); }
+
+    public void setStruggleIndex(int amount) { put(KEY_STRUGGLE_INDEX, amount); }
+
 
     public Word getWord() {
         Object value = get(KEY_WORD);

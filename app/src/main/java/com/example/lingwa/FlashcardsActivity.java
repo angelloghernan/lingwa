@@ -52,6 +52,7 @@ import www.sanju.motiontoast.MotionToast;
 public class FlashcardsActivity extends AppCompatActivity {
 
     private static final String TAG = "FlashcardsActivity";
+    private static final int MAX_STRUGGLE_INDEX = 5;
     ProgressBar pbFlashcardProgress;
     ProgressBar pbWordLoading;
     FrameLayout flFlashcard;
@@ -117,22 +118,6 @@ public class FlashcardsActivity extends AppCompatActivity {
         btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                quizFragment = QuizFragment.newInstance(currentWord, wordTranslation);
-
-                tvWord.setVisibility(View.INVISIBLE);
-                flFlashcard.setBackground(null);
-
-                flFlashcard.setAnimation(fadeIn);
-
-                cannotFlip = true;
-                quizShowing = true;
-
-                flFlashcard.setRotationY(0f);
-                tvWord.setRotationY(0f);
-
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.add(R.id.flFlashcard, quizFragment);
-                transaction.commit();
 
             }
         });
@@ -156,6 +141,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                 String answer = etAnswer.getText().toString().toLowerCase();
 
                 int familiarityScore = wordList.get(wordIndex).getFamiliarityScore();
+                int struggleIndex = wordList.get(wordIndex).getStruggleIndex();
 
                 if (answer.equals(wordTranslation)) {
                     if (quizShowing) {
@@ -166,6 +152,8 @@ public class FlashcardsActivity extends AppCompatActivity {
                         }
                         Fragment flashcardFragment = new FlashcardFragment();
                         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                        wordList.get(wordIndex).setStruggleIndex(struggleIndex - 2);
 
                         transaction.remove(quizFragment);
                         transaction.addToBackStack(null);
@@ -180,10 +168,20 @@ public class FlashcardsActivity extends AppCompatActivity {
                         quizShowing = false;
                         cannotFlip = false;
                         return;
+                    } else if (wordList.get(wordIndex).getStruggleIndex() >= MAX_STRUGGLE_INDEX && !answeredCorrectly) {
+                        etAnswer.setText("");
+                        showQuizFragment();
+                        return;
                     }
 
-                    if (answeredCorrectly && familiarityScore < 5) {
-                        wordList.get(wordIndex).setFamiliarityScore(familiarityScore + 1);
+                    if (answeredCorrectly) {
+                        WordWrapper word = wordList.get(wordIndex);
+                        if (struggleIndex > 0) {
+                            word.setStruggleIndex(struggleIndex - 1);
+                        }
+                        if(familiarityScore < 5) {
+                            word.setFamiliarityScore(familiarityScore + 1);
+                        }
                     }
 
                     wordIndex++;
@@ -212,8 +210,12 @@ public class FlashcardsActivity extends AppCompatActivity {
                     return;
                 }
 
-                else if (answeredCorrectly && familiarityScore > 0) {
+                if (answeredCorrectly && familiarityScore > 0) {
                     wordList.get(wordIndex).setFamiliarityScore(familiarityScore - 1);
+                }
+
+                if (answeredCorrectly && struggleIndex < MAX_STRUGGLE_INDEX) {
+                    wordList.get(wordIndex).setStruggleIndex(struggleIndex + 1);
                 }
 
                 answeredCorrectly = false;
@@ -235,9 +237,64 @@ public class FlashcardsActivity extends AppCompatActivity {
                 flipFlashcard(360f, currentWord);
             }
 
+            WordWrapper word = wordList.get(wordIndex);
+
+            if (word.getStruggleIndex() < MAX_STRUGGLE_INDEX) {
+                word.setStruggleIndex(word.getStruggleIndex() + 1);
+                wordList.set(wordIndex, word);
+            }
+
+
             flashcardFlipped = !flashcardFlipped;
         }
     };
+
+    /*
+    private void showQuiz() {
+        // If there is no translation for this word yet
+        if (wordTranslation == null) {
+            pbWordLoading.setVisibility(View.VISIBLE);
+            pbWordLoading.setActivated(true);
+            Translator.translateWord(currentWord, "es", "en", new Translator.TranslatorCallback() {
+                @Override
+                public void onTranslationSuccess(String translation) {
+                    wordTranslation = translation.toLowerCase();
+                    pbWordLoading.setVisibility(View.INVISIBLE);
+                    pbWordLoading.setActivated(false);
+                    showQuizFragment();
+                }
+
+                @Override
+                public void onTranslationFailure(Exception e) {
+                    Log.e(TAG, "on failure to translate word: " + e.toString());
+                }
+            });
+        }
+
+        else {
+            showQuizFragment();
+        }
+    }
+    */
+
+    void showQuizFragment() {
+        quizFragment = QuizFragment.newInstance(currentWord, wordTranslation);
+
+        tvWord.setVisibility(View.INVISIBLE);
+        flFlashcard.setBackground(null);
+
+        flFlashcard.setAnimation(fadeIn);
+
+        cannotFlip = true;
+        quizShowing = true;
+
+        flFlashcard.setRotationY(0f);
+        tvWord.setRotationY(0f);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.flFlashcard, quizFragment);
+        transaction.commit();
+    }
 
     private void flipFlashcard(float degrees, String newText) {
         flFlashcard.animate().rotationY(degrees).setDuration(FLIP_DURATION).start();
@@ -315,6 +372,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                 }
 
                 ujwEntry.setFamiliarityScore(wordWrapper.getFamiliarityScore());
+                ujwEntry.setStruggleIndex(wordWrapper.getStruggleIndex());
                 ujwEntryList.add(ujwEntry);
             }
             try {

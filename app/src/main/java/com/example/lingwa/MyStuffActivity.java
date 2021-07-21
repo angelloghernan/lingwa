@@ -2,6 +2,7 @@ package com.example.lingwa;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -86,11 +87,13 @@ public class MyStuffActivity extends AppCompatActivity {
 
 
         for (int i = 0; i < ujwEntryList.size(); i++) {
-            Word word = ujwEntryList.get(i).getWord();
+            UserJoinWord ujwEntry = ujwEntryList.get(i);
+            Word word = ujwEntry.getWord();
             WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(),
-                    ujwEntryList.get(i).getSavedBy(), word.getOriginatesFrom().getObjectId());
-            wordWrapper.setFamiliarityScore(ujwEntryList.get(i).getFamiliarityScore());
-            wordWrapper.setParentObjectId(ujwEntryList.get(i).getObjectId());
+                    ujwEntry.getSavedBy(), word.getOriginatesFrom().getObjectId());
+            wordWrapper.setFamiliarityScore(ujwEntry.getFamiliarityScore());
+            wordWrapper.setParentObjectId(ujwEntry.getObjectId());
+            wordWrapper.setStruggleIndex(ujwEntry.getStruggleIndex());
             wordList.add(wordWrapper);
         }
 
@@ -98,7 +101,13 @@ public class MyStuffActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (ParseUser.getCurrentUser().getJSONArray("recentArticles") == null) {
-                    Toast.makeText(context, "Please read an article before practicing!", Toast.LENGTH_SHORT).show();
+                    MotionToast.Companion.createToast((Activity) context,
+                            "Warning",
+                            "Please read an article before practicing!",
+                            MotionToast.TOAST_WARNING,
+                            MotionToast.GRAVITY_BOTTOM,
+                            MotionToast.SHORT_DURATION,
+                            ResourcesCompat.getFont(context, R.font.helvetica_regular));
                     return;
                 }
                 pbStuffLoading.setVisibility(View.VISIBLE);
