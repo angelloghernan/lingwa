@@ -52,14 +52,13 @@ import www.sanju.motiontoast.MotionToast;
 public class FlashcardsActivity extends AppCompatActivity {
 
     private static final String TAG = "FlashcardsActivity";
-    private static final int MAX_STRUGGLE_INDEX = 5;
+    private static final int MAX_STRUGGLE_INDEX = 3;
     ProgressBar pbFlashcardProgress;
     ProgressBar pbWordLoading;
     FrameLayout flFlashcard;
     TextView tvWord;
     EditText etAnswer;
     Button btnSubmit;
-    Button btnTest;
 
     protected AlphaAnimation fadeIn = new AlphaAnimation(0.0f , 1.0f );
     protected AlphaAnimation fadeOut = new AlphaAnimation( 1.0f , 0.0f );
@@ -112,16 +111,6 @@ public class FlashcardsActivity extends AppCompatActivity {
         btnSubmit.setOnClickListener(submit);
         flFlashcard.setOnClickListener(onFlashcardClicked);
 
-        btnTest = findViewById(R.id.btnTest);
-
-
-        btnTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
 
     }
 
@@ -167,6 +156,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                         etAnswer.setText("");
                         quizShowing = false;
                         cannotFlip = false;
+                        answeredCorrectly = true;
                         return;
                     } else if (wordList.get(wordIndex).getStruggleIndex() >= MAX_STRUGGLE_INDEX && !answeredCorrectly) {
                         etAnswer.setText("");
