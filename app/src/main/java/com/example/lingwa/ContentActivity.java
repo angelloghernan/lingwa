@@ -2,10 +2,12 @@ package com.example.lingwa;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -56,6 +58,8 @@ import org.parceler.Parcels;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
+
+import www.sanju.motiontoast.MotionToast;
 
 public class ContentActivity extends AppCompatActivity {
 
@@ -181,11 +185,23 @@ public class ContentActivity extends AppCompatActivity {
                     public void done(UserJoinWord ujw, ParseException e) {
                         if (e != null && e.getCode() != ParseException.OBJECT_NOT_FOUND) {
                             Log.e(TAG, "Error checking UserJoinWord table: " + e.toString());
+                            MotionToast.Companion.createColorToast((Activity) context,
+                                    "Oops!",
+                                    "There was an error saving this word.",
+                                    MotionToast.TOAST_ERROR,
+                                    MotionToast.GRAVITY_BOTTOM,
+                                    MotionToast.SHORT_DURATION,
+                                    ResourcesCompat.getFont(context, R.font.helvetica_regular));
                             return;
                         }
                         if (ujw != null) {
-                            Toast.makeText(context, "This word is already in your word list",
-                                    Toast.LENGTH_SHORT).show();
+                            MotionToast.Companion.createColorToast((Activity) context,
+                                    "Info",
+                                    "This word is already in your word list",
+                                    MotionToast.TOAST_INFO,
+                                    MotionToast.GRAVITY_BOTTOM,
+                                    MotionToast.SHORT_DURATION,
+                                    ResourcesCompat.getFont(context, R.font.helvetica_regular));
                             return;
                         }
 
@@ -241,7 +257,7 @@ public class ContentActivity extends AppCompatActivity {
                                     .setArrowOrientation(arrowOrientation)
                                     .setWidth(BalloonSizeSpec.WRAP)
                                     .setCornerRadius(4f)
-                                    .setBackgroundColorResource(R.color.dark_green)
+                                    .setBackgroundColorResource(R.color.info_color)
                                     .setTextColorResource(R.color.white)
                                     .setTextSize(18f)
                                     .setText(translation)
@@ -280,7 +296,13 @@ public class ContentActivity extends AppCompatActivity {
                     return;
                 }
 
-                Toast.makeText(context, "Word saved", Toast.LENGTH_SHORT).show();
+                MotionToast.Companion.createColorToast((Activity) context,
+                        "Success",
+                        "Word saved successfully!",
+                        MotionToast.TOAST_SUCCESS,
+                        MotionToast.GRAVITY_BOTTOM,
+                        MotionToast.SHORT_DURATION,
+                        ResourcesCompat.getFont(context, R.font.helvetica_regular));
             }
     };
 

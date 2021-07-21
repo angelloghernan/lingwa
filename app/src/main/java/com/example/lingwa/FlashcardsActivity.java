@@ -1,7 +1,9 @@
 package com.example.lingwa;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -38,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
+
+import www.sanju.motiontoast.MotionToast;
 
 public class FlashcardsActivity extends AppCompatActivity {
 
@@ -117,7 +121,13 @@ public class FlashcardsActivity extends AppCompatActivity {
                     wordIndex++;
 
                     if (wordIndex > wordList.size() - 1) {
-                        Toast.makeText(context, "Practice complete!", Toast.LENGTH_SHORT).show();
+                        MotionToast.Companion.createToast((Activity) context,
+                                "Good job!",
+                                "Practice complete!",
+                                MotionToast.TOAST_SUCCESS,
+                                MotionToast.GRAVITY_BOTTOM,
+                                MotionToast.LONG_DURATION,
+                                ResourcesCompat.getFont(context, R.font.helvetica_regular));
                         updateDatabase();
                         createReturnIntent();
                         finish();

@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import www.sanju.motiontoast.MotionToast;
+
 public class MyStuffActivity extends AppCompatActivity {
 
     private static final String TAG = "MyStuffActivity";
@@ -103,7 +105,7 @@ public class MyStuffActivity extends AppCompatActivity {
                 pbStuffLoading.setActivated(true);
                 Intent intent = new Intent(context, FlashcardsActivity.class);
                 intent.putExtra("wordList", Parcels.wrap(wordList));
-                startActivity(intent);
+                startActivityForResult(intent, FLASHCARD_REQUEST_CODE);
             }
         });
     }
