@@ -48,6 +48,7 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.skydoves.balloon.ArrowOrientation;
+import com.skydoves.balloon.ArrowOrientationRules;
 import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
@@ -71,6 +72,7 @@ public class ContentActivity extends AppCompatActivity {
     ContentWrapper contentWrapper;
     Paginator paginator;
     LongClickLinkMovementMethod bodyMovementMethod;
+    Button btnTest;
     int currentPage = 0;
 
     @Override
@@ -130,7 +132,6 @@ public class ContentActivity extends AppCompatActivity {
                         tvBody.getLineSpacingExtra(),
                         tvBody.getIncludeFontPadding());
 
-                tvBody.setHighlightColor(Color.LTGRAY);
                 makeTextClickable(paginator.get(0).toString());
                 tvBody.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
@@ -241,28 +242,35 @@ public class ContentActivity extends AppCompatActivity {
 
                         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
                             SpannableString completeText = (SpannableString) tvBody.getText();
-                            ArrowOrientation arrowOrientation = ArrowOrientation.TOP;
+                            ArrowOrientation arrowOrientation = ArrowOrientation.BOTTOM;
 
                             int arrowSize = 10;
                             Rect rect = getSpanCoordinateRect(tvBody, span);
                             int y = rect.top;
 
                             if (rect.top - arrowSize < 0) {
-                                arrowOrientation = ArrowOrientation.BOTTOM;
+                                arrowOrientation = ArrowOrientation.TOP;
                                 y = rect.bottom + rect.height() + arrowSize;
+                            }
+
+                            float arrowPosition = 0.3f;
+
+                            if (translation.length() <= 2) {
+                                arrowPosition = 0.5f;
                             }
 
                             Balloon translationDisplay = new Balloon.Builder(context)
                                     .setArrowSize(arrowSize)
                                     .setArrowOrientation(arrowOrientation)
                                     .setWidth(BalloonSizeSpec.WRAP)
-                                    .setCornerRadius(4f)
+                                    .setCornerRadius(3f)
                                     .setBackgroundColorResource(R.color.info_color)
                                     .setTextColorResource(R.color.white)
                                     .setTextSize(18f)
                                     .setText(translation)
-                                    .setArrowPosition(0.5f)
+                                    .setArrowPosition(arrowPosition)
                                     .setArrowPositionRules(ArrowPositionRules.ALIGN_BALLOON)
+                                    .setArrowOrientationRules(ArrowOrientationRules.ALIGN_FIXED)
                                     .setBalloonAnimation(BalloonAnimation.CIRCULAR)
                                     .build();
 

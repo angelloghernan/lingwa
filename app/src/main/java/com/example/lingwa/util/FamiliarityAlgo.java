@@ -154,7 +154,7 @@ class SortByPriority implements Comparator<WordWrapper> {
             return wordLength;
         }
 
-        priorityScore *= wordLength;
+        priorityScore = wordLength;
         priorityScore += 5 * wordLength * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
 
         if (wordWrapper.parentSavedBy.equals(BY_USER)) {

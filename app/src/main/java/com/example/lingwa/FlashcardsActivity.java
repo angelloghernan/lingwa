@@ -2,6 +2,9 @@ package com.example.lingwa;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.transition.FragmentTransitionSupport;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,6 +15,7 @@ import android.os.Looper;
 import android.os.UserManager;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,6 +24,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.lingwa.fragments.FlashcardFragment;
+import com.example.lingwa.fragments.QuizFragment;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
 import com.example.lingwa.util.FamiliarityAlgo;
@@ -52,6 +58,12 @@ public class FlashcardsActivity extends AppCompatActivity {
     TextView tvWord;
     EditText etAnswer;
     Button btnSubmit;
+    Button btnTest;
+
+    protected AlphaAnimation fadeIn = new AlphaAnimation(0.0f , 1.0f );
+    protected AlphaAnimation fadeOut = new AlphaAnimation( 1.0f , 0.0f );
+
+    QuizFragment quizFragment;
 
     String currentWord;
     String wordTranslation = null;
@@ -59,6 +71,9 @@ public class FlashcardsActivity extends AppCompatActivity {
     boolean flashcardFlipped = false;
     boolean flashcardFlipping = false;
     boolean answeredCorrectly = true;
+    boolean cannotFlip = true;
+    boolean quizShowing = false;
+
     Context context = this;
 
     List<WordWrapper> wordList;
@@ -79,6 +94,9 @@ public class FlashcardsActivity extends AppCompatActivity {
         etAnswer = findViewById(R.id.etAnswer);
         btnSubmit = findViewById(R.id.btnSubmit);
 
+        fadeIn.setDuration(1200);
+        fadeOut.setFillAfter(true);
+
         FamiliarityAlgo familiarityAlgo = new FamiliarityAlgo();
 
         try {
@@ -92,6 +110,32 @@ public class FlashcardsActivity extends AppCompatActivity {
 
         btnSubmit.setOnClickListener(submit);
         flFlashcard.setOnClickListener(onFlashcardClicked);
+
+        btnTest = findViewById(R.id.btnTest);
+
+
+        btnTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                quizFragment = QuizFragment.newInstance(currentWord, wordTranslation);
+
+                tvWord.setVisibility(View.INVISIBLE);
+                flFlashcard.setBackground(null);
+
+                flFlashcard.setAnimation(fadeIn);
+
+                cannotFlip = true;
+                quizShowing = true;
+
+                flFlashcard.setRotationY(0f);
+                tvWord.setRotationY(0f);
+
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.add(R.id.flFlashcard, quizFragment);
+                transaction.commit();
+
+            }
+        });
 
 
     }
@@ -114,6 +158,30 @@ public class FlashcardsActivity extends AppCompatActivity {
                 int familiarityScore = wordList.get(wordIndex).getFamiliarityScore();
 
                 if (answer.equals(wordTranslation)) {
+                    if (quizShowing) {
+                        if (quizFragment == null) {
+                            quizShowing = false;
+                            cannotFlip = false;
+                            return;
+                        }
+                        Fragment flashcardFragment = new FlashcardFragment();
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                        transaction.remove(quizFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                        tvWord.setVisibility(View.VISIBLE);
+                        tvWord.startAnimation(fadeIn);
+                        tvWord.setText(currentWord);
+                        flFlashcard.setBackgroundResource(R.drawable.rounded_shape);
+                        flFlashcard.setAnimation(fadeIn);
+                        etAnswer.setText("");
+                        quizShowing = false;
+                        cannotFlip = false;
+                        return;
+                    }
+
                     if (answeredCorrectly && familiarityScore < 5) {
                         wordList.get(wordIndex).setFamiliarityScore(familiarityScore + 1);
                     }
@@ -155,7 +223,7 @@ public class FlashcardsActivity extends AppCompatActivity {
     View.OnClickListener onFlashcardClicked = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (flashcardFlipping)
+            if (flashcardFlipping || cannotFlip)
                 return;
 
             flashcardFlipping = true;
@@ -188,6 +256,7 @@ public class FlashcardsActivity extends AppCompatActivity {
         tvWord.setVisibility(View.INVISIBLE);
         pbWordLoading.setVisibility(View.VISIBLE);
         pbWordLoading.setActivated(true);
+        cannotFlip = true;
 
         Translator.translateWord(currentWord, "es", "en", new Translator.TranslatorCallback() {
             @Override
@@ -202,6 +271,7 @@ public class FlashcardsActivity extends AppCompatActivity {
                 wordTranslation = translation.toLowerCase();
                 pbWordLoading.setVisibility(View.INVISIBLE);
                 pbWordLoading.setActivated(false);
+                cannotFlip = false;
             }
 
             @Override

@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.example.lingwa.R;
 import com.example.lingwa.models.Content;
 import com.parse.ParseFile;
@@ -92,6 +93,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
             if (contentImage != null) {
                 Glide.with(context)
                         .load(contentImage.getUrl())
+                        .transform(new RoundedCorners(10))
                         .into(ivContentImage);
             }
 
