@@ -43,7 +43,7 @@ public class FamiliarityAlgo {
         // Sort in descending order of priority
         Collections.sort(wordWrapperList, new SortByPriority());
 
-        if (articleFetchFailed) {
+        if (articleFetchFailed || numItems > wordWrapperList.size()) {
             return wordWrapperList;
         }
 
@@ -56,7 +56,7 @@ public class FamiliarityAlgo {
 
 
         if (jsonArray != null) {
-            contentId = jsonArray.getString(0);
+            contentId = jsonArray.getString(jsonArray.length() - 1);
         } else {
             return null;
         }

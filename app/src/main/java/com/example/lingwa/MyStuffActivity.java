@@ -111,9 +111,9 @@ public class MyStuffActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        pbStuffLoading.setVisibility(View.INVISIBLE);
+        pbStuffLoading.setActivated(false);
         if (resultCode == Activity.RESULT_OK && requestCode == FLASHCARD_REQUEST_CODE && data != null) {
-            pbStuffLoading.setVisibility(View.INVISIBLE);
-            pbStuffLoading.setActivated(false);
             // get the new word (wrapper) list so we can use the familiarity scores
             wordList = Parcels.unwrap(data.getParcelableExtra("wordList"));
         }
