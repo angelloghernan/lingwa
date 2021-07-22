@@ -74,7 +74,12 @@ public class FamiliarityAlgo {
         try {
             List<Word> words = originatesFromQuery.find();
             List<WordWrapper> newWords = new ArrayList<>();
+            int duplicateWords = 0;
             for (int i = 0; i < numWords && i < words.size(); i++) {
+                if (wordsAlreadyAdded.contains(words.get(i).getOriginalWord())) {
+                    duplicateWords--;
+                    continue;
+                }
                 Word word = words.get(i);
                 WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(), "algorithm",
                         content.getObjectId());
@@ -83,10 +88,10 @@ public class FamiliarityAlgo {
                 newWords.add(wordWrapper);
                 wordsAlreadyAdded.add(wordWrapper.word);
             }
-            if (numWords < words.size()) {
+            if (numWords < words.size() - duplicateWords) {
                 return newWords;
             } else {
-                numWords -= words.size();
+                numWords -= (words.size() - duplicateWords);
             }
         } catch (ParseException e) {
             if (e.getCode() != ParseException.OBJECT_NOT_FOUND) {
