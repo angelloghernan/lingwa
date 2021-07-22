@@ -129,8 +129,12 @@ public class FlashcardsActivity extends AppCompatActivity {
 
                 String answer = etAnswer.getText().toString().toLowerCase();
 
-                int familiarityScore = wordList.get(wordIndex).getFamiliarityScore();
-                int struggleIndex = wordList.get(wordIndex).getStruggleIndex();
+                WordWrapper wordWrapper = wordList.get(wordIndex);
+
+                int familiarityScore = wordWrapper.getFamiliarityScore();
+                int struggleIndex = wordWrapper.getStruggleIndex();
+                int streak = wordWrapper.getStreak();
+                boolean gotRightLastTime = wordWrapper.getGotRightLastTime();
 
                 if (answer.equals(wordTranslation)) {
                     if (quizShowing) {
@@ -172,6 +176,12 @@ public class FlashcardsActivity extends AppCompatActivity {
                         if(familiarityScore < 5) {
                             word.setFamiliarityScore(familiarityScore + 1);
                         }
+                        if (gotRightLastTime) {
+                            word.setStreak(streak + 1);
+                        } else {
+                            word.setStreak(1);
+                            word.setGotRightLastTime(true);
+                        }
                     }
 
                     wordIndex++;
@@ -200,12 +210,22 @@ public class FlashcardsActivity extends AppCompatActivity {
                     return;
                 }
 
+                // If the user got the answer wrong, then lower their familiarity score,
+                // increase their level of struggling, and start a "losing" streak
+
                 if (answeredCorrectly && familiarityScore > 0) {
                     wordList.get(wordIndex).setFamiliarityScore(familiarityScore - 1);
                 }
 
                 if (answeredCorrectly && struggleIndex < MAX_STRUGGLE_INDEX) {
                     wordList.get(wordIndex).setStruggleIndex(struggleIndex + 1);
+                }
+
+                if (answeredCorrectly && gotRightLastTime) {
+                    wordList.get(wordIndex).setStreak(1);
+                    wordList.get(wordIndex).setGotRightLastTime(false);
+                } else if (!gotRightLastTime){
+                    wordList.get(wordIndex).setStreak(streak + 1);
                 }
 
                 answeredCorrectly = false;
@@ -363,6 +383,8 @@ public class FlashcardsActivity extends AppCompatActivity {
 
                 ujwEntry.setFamiliarityScore(wordWrapper.getFamiliarityScore());
                 ujwEntry.setStruggleIndex(wordWrapper.getStruggleIndex());
+                ujwEntry.setGotRightLastTime(wordWrapper.getGotRightLastTime());
+                ujwEntry.setStreak(wordWrapper.getStreak());
                 ujwEntryList.add(ujwEntry);
             }
             try {

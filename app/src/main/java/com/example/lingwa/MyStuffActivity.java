@@ -94,6 +94,8 @@ public class MyStuffActivity extends AppCompatActivity {
             wordWrapper.setFamiliarityScore(ujwEntry.getFamiliarityScore());
             wordWrapper.setParentObjectId(ujwEntry.getObjectId());
             wordWrapper.setStruggleIndex(ujwEntry.getStruggleIndex());
+            wordWrapper.setStreak(ujwEntry.getStreak());
+            wordWrapper.setGotRightLastTime(ujwEntry.getGotRightLastTime());
             wordList.add(wordWrapper);
         }
 

@@ -11,6 +11,8 @@ public class WordWrapper {
     String parentObjectId = "null";
     int familiarityScore;
     int struggleIndex = 0;
+    int streak = 0;
+    boolean gotRightLastTime = false;
 
     public WordWrapper() {
 
@@ -41,6 +43,14 @@ public class WordWrapper {
     public void setParentObjectId(String parentObjectId) {
         this.parentObjectId = parentObjectId;
     }
+
+    public int getStreak() { return this.streak; }
+
+    public void setStreak(int amount) {this.streak = amount; }
+
+    public boolean getGotRightLastTime() {return this.gotRightLastTime;}
+
+    public void setGotRightLastTime(boolean gotRight) {this.gotRightLastTime = gotRight;}
 
     public String getParentObjectId() {
         return this.parentObjectId;

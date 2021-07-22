@@ -168,6 +168,12 @@ class SortByPriority implements Comparator<WordWrapper> {
             priorityScore *= 2;
         }
 
+        if (wordWrapper.getGotRightLastTime()) {
+            priorityScore -= wordWrapper.getStreak();
+        } else {
+            priorityScore += wordWrapper.getStreak();
+        }
+
         return priorityScore;
     }
 }

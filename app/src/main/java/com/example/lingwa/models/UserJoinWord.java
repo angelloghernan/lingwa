@@ -12,6 +12,8 @@ public class UserJoinWord extends ParseObject {
     public static final String KEY_FAMILIARITY_SCORE = "familiarityScore";
     public static final String KEY_SAVED_BY = "savedBy";
     public static final String KEY_STRUGGLE_INDEX = "struggleIndex";
+    public static final String KEY_STREAK = "streak";
+    public static final String KEY_GOT_RIGHT_LAST_TIME = "gotRightLastTime";
 
     public UserJoinWord() {
 
@@ -35,6 +37,14 @@ public class UserJoinWord extends ParseObject {
     public int getStruggleIndex() {return getInt(KEY_STRUGGLE_INDEX); }
 
     public void setStruggleIndex(int amount) { put(KEY_STRUGGLE_INDEX, amount); }
+
+    public int getStreak () {return getInt(KEY_STREAK); }
+
+    public void setStreak(int num) { put(KEY_STREAK, num); }
+
+    public boolean getGotRightLastTime() {return getBoolean(KEY_GOT_RIGHT_LAST_TIME);}
+
+    public void setGotRightLastTime(boolean val) {put(KEY_GOT_RIGHT_LAST_TIME, val);}
 
 
     public Word getWord() {
