@@ -160,18 +160,16 @@ class SortByPriority implements Comparator<WordWrapper> {
         }
 
         priorityScore = wordLength;
-        priorityScore += 5 * wordLength * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
-
-        priorityScore += 8 * (MAX_STRUGGLE_INDEX - wordWrapper.getStruggleIndex());
+        priorityScore += 5 * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
 
         if (wordWrapper.parentSavedBy.equals(BY_USER)) {
             priorityScore *= 2;
         }
 
         if (wordWrapper.getGotRightLastTime()) {
-            priorityScore -= wordWrapper.getStreak();
+            priorityScore -= 2 * wordWrapper.getStreak() * wordWrapper.getFamiliarityScore();
         } else {
-            priorityScore += wordWrapper.getStreak();
+            priorityScore += wordWrapper.getStreak() * wordWrapper.getStruggleIndex();
         }
 
         return priorityScore;
