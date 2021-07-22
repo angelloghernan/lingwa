@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import com.example.lingwa.fragments.AddPostFragment;
 import com.example.lingwa.fragments.HomeFragment;
 import com.example.lingwa.fragments.MyProfileFragment;
 import com.example.lingwa.fragments.SearchFragment;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         final Fragment homeFragment = new HomeFragment();
         final Fragment myProfileFragment = new MyProfileFragment();
         final Fragment searchFragment = new SearchFragment();
+        final Fragment addPostFragment = new AddPostFragment();
 
         fragmentManager.beginTransaction().replace(R.id.flContainer, homeFragment).commit();
 
@@ -44,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.action_search:
                         fragment = searchFragment;
+                        break;
+                    case R.id.action_new_post:
+                        fragment = addPostFragment;
                         break;
                     default:
                         return false;

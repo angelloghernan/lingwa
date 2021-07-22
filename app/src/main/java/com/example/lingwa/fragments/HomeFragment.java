@@ -9,6 +9,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +21,9 @@ import com.example.lingwa.ContentActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
+import com.example.lingwa.models.Post;
 import com.example.lingwa.wrappers.ContentWrapper;
+import com.google.android.material.tabs.TabLayout;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -29,6 +33,8 @@ import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import me.samlss.broccoli.Broccoli;
 
@@ -42,6 +48,7 @@ public class HomeFragment extends Fragment {
     public static final String TAG = "HomeFragment";
     protected PostAdapter adapter;
     protected List<Content> contentList;
+    protected List<Post> postList;
 
     RecyclerView rvHomeFeed;
     ProgressBar pbPostLoading;
@@ -88,8 +95,41 @@ public class HomeFragment extends Fragment {
         rvHomeFeed = view.findViewById(R.id.rvHomeFeed);
         pbPostLoading = view.findViewById(R.id.pbPostLoading);
         contentList = new ArrayList<>();
-        queryForContent();
-        adapter = new PostAdapter(view.getContext(), contentList, callback);
+        postList = new ArrayList<>();
+        queryForContentAndPosts();
+        adapter = new PostAdapter(view.getContext(), contentList, postList, callback);
+
+        TabLayout tlHomeTabs = view.findViewById(R.id.tlHomeTabs);
+        tlHomeTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 1:
+                        adapter.setPostsShown(false);
+                        rvHomeFeed.getLayoutManager().removeAllViews();
+                        adapter.notifyDataSetChanged();
+                        break;
+
+                    case 0:
+                        adapter.setPostsShown(true);
+                        rvHomeFeed.getLayoutManager().removeAllViews();
+                        adapter.notifyDataSetChanged();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
         rvHomeFeed.setAdapter(adapter);
         rvHomeFeed.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -97,25 +137,44 @@ public class HomeFragment extends Fragment {
 
     // Get the last 20 content posts so it can be used in the adapter and displayed
     // in the recycler view (rvHomeFeed)
-    private void queryForContent() {
+    private void queryForContentAndPosts() {
         pbPostLoading.setVisibility(View.VISIBLE);
         pbPostLoading.setActivated(true);
         ParseQuery<Content> contentQuery = ParseQuery.getQuery(Content.class);
-        contentQuery.setLimit(20);
+        contentQuery.setLimit(10);
         contentQuery.addDescendingOrder("createdAt");
 
-        contentQuery.findInBackground(new FindCallback<Content>() {
+        ParseQuery<Post> postQuery = ParseQuery.getQuery(Post.class);
+        postQuery.setLimit(10);
+        postQuery.include(Post.KEY_AUTHOR);
+        postQuery.addDescendingOrder("createdAt");
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(new Runnable() {
             @Override
-            public void done(List<Content> content, ParseException e) {
-                if (e != null) {
-                    Log.e(TAG, "Issue getting content posts ", e);
-                    return;
+            public void run() {
+                try {
+                    contentList = contentQuery.find();
+                    postList = postQuery.find();
+                } catch (ParseException e) {
+                    Log.e(TAG, e.toString());
                 }
-                pbPostLoading.setVisibility(View.INVISIBLE);
-                pbPostLoading.setActivated(false);
-                adapter.clear();
-                adapter.addAll(content);
-                adapter.notifyDataSetChanged();
+
+                adapter.clearContent();
+                adapter.clearPosts();
+                adapter.addAllPosts(postList);
+                adapter.addAllContent(contentList);
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                        pbPostLoading.setVisibility(View.INVISIBLE);
+                        pbPostLoading.setActivated(false);
+                    }
+                });
             }
         });
     }
@@ -129,7 +188,7 @@ public class HomeFragment extends Fragment {
             ContentWrapper parcelableWrapper = new ContentWrapper(content.getObjectId(),
                     content.getTitle(), content.getAuthor());
             parcelableWrapper.contentType = content.getContentType();
-            if (parcelableWrapper.contentType == Content.TYPE_ARTICLE) {
+            if (parcelableWrapper.contentType.equals(Content.TYPE_BOOK)) {
                 parcelableWrapper.attachmentUrl = content.getAttachment().getUrl();
             } else {
                 parcelableWrapper.body = content.getBody();

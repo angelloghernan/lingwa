@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/ivPostProfilePicture"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/tvPostUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/ivPostProfilePicture"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="0dp"
+        android:layout_toEndOf="@+id/ivPostProfilePicture"
+        android:text="Username"
+        app:layout_constraintStart_toEndOf="@+id/ivPostProfilePicture"
+        tools:layout_editor_absoluteY="15dp" />
+
+    <TextView
+        android:id="@+id/tvPostBody"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPostUsername"
+        android:layout_alignBottom="@+id/ivPostProfilePicture"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="-20dp"
+        android:layout_toEndOf="@+id/ivPostProfilePicture"
+        android:text="Post content; lorem ipsum dolor sit amet"
+        app:layout_constraintStart_toStartOf="@+id/tvPostUsername"
+        app:layout_constraintTop_toBottomOf="@+id/tvPostUsername" />
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/tvPostBody"
+        android:layout_alignStart="@+id/ivPostProfilePicture"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="20dp"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/ic_baseline_reply_24" />
+
+    <ImageButton
+        android:id="@+id/imageButton2"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/tvPostBody"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="20dp"
+        android:layout_toEndOf="@+id/imageButton"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/ic_outline_star_outline_24" />
+
+    <ImageButton
+        android:id="@+id/imageButton3"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_alignTop="@+id/imageButton2"
+        android:layout_alignEnd="@+id/tvPostBody"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="0dp"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/ic_baseline_bookmark_border_24" />
+</RelativeLayout>

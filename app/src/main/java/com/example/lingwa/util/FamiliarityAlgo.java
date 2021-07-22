@@ -151,7 +151,7 @@ class SortByPriority implements Comparator<WordWrapper> {
     // based on complexity, familiarity, and source
     // currently simple
     public int calculatePriorityScore(WordWrapper wordWrapper) {
-        int priorityScore = 1;
+        int priorityScore;
 
         int wordLength = wordWrapper.word.length();
 

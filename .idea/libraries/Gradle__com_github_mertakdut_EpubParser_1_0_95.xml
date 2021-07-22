@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.mertakdut:EpubParser:1.0.95">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mertakdut/EpubParser/1.0.95/cd71db450e1df23200e9cd380d703d39aa8d78b/EpubParser-1.0.95.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mertakdut/EpubParser/1.0.95/9410b4fa378f55d8b722b4eccb280f42d4a680a5/EpubParser-1.0.95-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mertakdut/EpubParser/1.0.95/f019dc5cd88f9dfd3052e7f8eeca1dc08393f312/EpubParser-1.0.95-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.example.lingwa.BuildConfig;
 import com.example.lingwa.models.Content;
+import com.example.lingwa.models.Post;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
 import com.parse.Parse;
@@ -22,6 +23,7 @@ public class ParseApplication extends Application {
         ParseObject.registerSubclass(Content.class);
         ParseObject.registerSubclass(UserJoinWord.class);
         ParseObject.registerSubclass(Word.class);
+        ParseObject.registerSubclass(Post.class);
 
         Parse.initialize(new Parse.Configuration.Builder(this)
                 .applicationId(BuildConfig.BACK4APP_APP_ID)
