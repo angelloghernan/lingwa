@@ -139,7 +139,7 @@ class SortByPriority implements Comparator<WordWrapper> {
     public static final String BY_USER = "user";
     public static final String BY_NOBODY = "unsaved";
     public static final int MAX_FAMILIARITY = 5;
-    public static final int MAX_STRUGGLE_INDEX = 5;
+    public static final int MAX_STRUGGLE_INDEX = 3;
 
     @Override
     public int compare(WordWrapper o1, WordWrapper o2) {
@@ -154,7 +154,6 @@ class SortByPriority implements Comparator<WordWrapper> {
 
     // calculate priority score for a given word
     // based on complexity, familiarity, and source
-    // currently simple
     public int calculatePriorityScore(WordWrapper wordWrapper) {
         int priorityScore;
 
@@ -174,7 +173,7 @@ class SortByPriority implements Comparator<WordWrapper> {
         if (wordWrapper.getGotRightLastTime()) {
             priorityScore -= 2 * wordWrapper.getStreak() * wordWrapper.getFamiliarityScore();
         } else {
-            priorityScore += wordWrapper.getStreak() * wordWrapper.getStruggleIndex();
+            priorityScore += wordWrapper.getStreak() * (MAX_FAMILIARITY - wordWrapper.getFamiliarityScore());
         }
 
         return priorityScore;

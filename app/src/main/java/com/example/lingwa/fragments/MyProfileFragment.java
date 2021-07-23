@@ -6,7 +6,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +21,18 @@ import com.bumptech.glide.Glide;
 import com.example.lingwa.LoginActivity;
 import com.example.lingwa.MyStuffActivity;
 import com.example.lingwa.R;
+import com.example.lingwa.adapters.PostAdapter;
+import com.example.lingwa.models.Content;
+import com.example.lingwa.models.Post;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import me.samlss.broccoli.Broccoli;
@@ -36,6 +47,7 @@ public class MyProfileFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "MyProfileFragment";
 
     private String mParam1;
     private String mParam2;
@@ -45,6 +57,9 @@ public class MyProfileFragment extends Fragment {
     TextView tvProfileUsername;
     TextView tvProfileBio;
     ImageView ivProfilePicture;
+    RecyclerView rvMyPosts;
+    List<Post> postList;
+    PostAdapter adapter;
 
     public MyProfileFragment() {
         // Required empty public constructor
@@ -92,8 +107,7 @@ public class MyProfileFragment extends Fragment {
         tvProfileBio = view.findViewById(R.id.tvProfileBio);
         tvProfileUsername = view.findViewById(R.id.tvProfileUsername);
         ivProfilePicture = view.findViewById(R.id.ivProfilePicture);
-        Broccoli broccoli = new Broccoli();
-        broccoli.addPlaceholders(tvProfileBio, tvProfileUsername, ivProfilePicture);
+        rvMyPosts = view.findViewById(R.id.rvMyPosts);
 
         ParseUser currentUser = ParseUser.getCurrentUser();
         tvProfileUsername.setText(currentUser.getUsername());
@@ -110,7 +124,13 @@ public class MyProfileFragment extends Fragment {
                     .into(ivProfilePicture);
         }
 
-        broccoli.clearAllPlaceholders();
+
+        postList = new ArrayList<>();
+        adapter = new PostAdapter(view.getContext(), null, postList, callback);
+        adapter.setPostsShown(true);
+        rvMyPosts.setAdapter(adapter);
+        rvMyPosts.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        fetchMyPosts();
 
         btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,4 +149,34 @@ public class MyProfileFragment extends Fragment {
             }
         });
     }
+
+    private void fetchMyPosts() {
+        ParseQuery<Post> myPostsQuery = ParseQuery.getQuery(Post.class);
+        myPostsQuery.whereEqualTo(Post.KEY_AUTHOR, ParseUser.getCurrentUser());
+        myPostsQuery.setLimit(20);
+        myPostsQuery.include(Post.KEY_AUTHOR);
+        myPostsQuery.addDescendingOrder("createdAt");
+        myPostsQuery.findInBackground(new FindCallback<Post>() {
+            @Override
+            public void done(List<Post> posts, ParseException e) {
+                if (e != null) {
+                    Log.e(TAG, "error getting user's posts: " + e.toString());
+                    return;
+                }
+
+                postList.addAll(posts);
+                adapter.clearPosts();
+                adapter.addAllPosts(posts);
+                adapter.notifyDataSetChanged();
+
+            }
+        });
+    }
+
+    PostAdapter.AdapterCallback callback = new PostAdapter.AdapterCallback() {
+        @Override
+        public void onPostSelected(int position, Content content) {
+
+        }
+    };
 }

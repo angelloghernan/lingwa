@@ -19,6 +19,7 @@ import com.example.lingwa.models.Post;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import me.samlss.broccoli.Broccoli;
@@ -33,7 +34,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
 
     public PostAdapter(Context context, List<Content> contentPosts, List<Post> posts, AdapterCallback callback) {
         this.context = context;
-        this.contentPosts = contentPosts;
+        if (contentPosts == null) {
+            this.contentPosts = new ArrayList<>();
+        } else {
+            this.contentPosts = contentPosts;
+        }
         this.posts = posts;
         this.callback = callback;
     }
@@ -105,7 +110,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this::onClick);
+            if (!postsShown) {
+                itemView.setOnClickListener(this::onClick);
+            }
 
         }
 

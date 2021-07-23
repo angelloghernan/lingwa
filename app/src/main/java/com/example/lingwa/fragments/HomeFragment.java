@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +30,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import org.jetbrains.annotations.NotNull;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
@@ -46,9 +48,16 @@ import me.samlss.broccoli.Broccoli;
 public class HomeFragment extends Fragment {
 
     public static final String TAG = "HomeFragment";
+    public static final String KEY_POST_LIST = "postList";
+    public static final String KEY_CONTENT_LIST = "contentList";
+    public static final String KEY_RECYCLER_VIEW_STATE = "rvState";
     protected PostAdapter adapter;
     protected List<Content> contentList;
     protected List<Post> postList;
+    boolean viewRestored = false;
+    Parcelable postListState;
+    Parcelable contentListState;
+    Parcelable rvState;
 
     RecyclerView rvHomeFeed;
     ProgressBar pbPostLoading;
@@ -80,6 +89,40 @@ public class HomeFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        if (savedInstanceState != null) {
+            contentList = Parcels.unwrap(savedInstanceState.getParcelable(KEY_CONTENT_LIST));
+            postList = Parcels.unwrap(savedInstanceState.getParcelable(KEY_POST_LIST));
+            rvState = Parcels.unwrap(savedInstanceState.getParcelable(KEY_RECYCLER_VIEW_STATE));
+            viewRestored = true;
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull @NotNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        rvState = rvHomeFeed.getLayoutManager().onSaveInstanceState();
+        contentListState = Parcels.wrap(contentList);
+        postListState = Parcels.wrap(postList);
+        outState.putParcelable(KEY_CONTENT_LIST, contentListState);
+        outState.putParcelable(KEY_POST_LIST, postListState);
+        outState.putParcelable(KEY_RECYCLER_VIEW_STATE, rvState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            postListState = savedInstanceState.getParcelable(KEY_POST_LIST);
+            contentListState = savedInstanceState.getParcelable(KEY_CONTENT_LIST);
+            rvState = savedInstanceState.getParcelable(KEY_RECYCLER_VIEW_STATE);
+        }
     }
 
     @Override
@@ -92,12 +135,17 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        rvHomeFeed = view.findViewById(R.id.rvHomeFeed);
         pbPostLoading = view.findViewById(R.id.pbPostLoading);
         contentList = new ArrayList<>();
         postList = new ArrayList<>();
         queryForContentAndPosts();
-        adapter = new PostAdapter(view.getContext(), contentList, postList, callback);
+
+        if (!viewRestored) {
+            adapter = new PostAdapter(view.getContext(), contentList, postList, callback);
+            rvHomeFeed = view.findViewById(R.id.rvHomeFeed);
+            rvHomeFeed.setAdapter(adapter);
+            rvHomeFeed.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        }
 
         TabLayout tlHomeTabs = view.findViewById(R.id.tlHomeTabs);
         tlHomeTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -106,13 +154,13 @@ public class HomeFragment extends Fragment {
                 switch (tab.getPosition()) {
                     case 1:
                         adapter.setPostsShown(false);
-                        rvHomeFeed.getLayoutManager().removeAllViews();
+                        rvHomeFeed.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
                         break;
 
                     case 0:
                         adapter.setPostsShown(true);
-                        rvHomeFeed.getLayoutManager().removeAllViews();
+                        rvHomeFeed.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
                         break;
                     default:
@@ -130,9 +178,6 @@ public class HomeFragment extends Fragment {
 
             }
         });
-
-        rvHomeFeed.setAdapter(adapter);
-        rvHomeFeed.setLayoutManager(new LinearLayoutManager(view.getContext()));
     }
 
     // Get the last 20 content posts so it can be used in the adapter and displayed

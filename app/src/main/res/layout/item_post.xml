@@ -3,7 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/vPostDivider"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_below="@id/imageButton2"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="2dp"
+        android:background="?android:attr/listDivider" />
 
     <ImageView
         android:id="@+id/ivPostProfilePicture"
@@ -47,8 +56,8 @@
 
     <ImageButton
         android:id="@+id/imageButton"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_below="@+id/tvPostBody"
         android:layout_alignStart="@+id/ivPostProfilePicture"
         android:layout_marginStart="0dp"
@@ -59,10 +68,10 @@
 
     <ImageButton
         android:id="@+id/imageButton2"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_below="@+id/tvPostBody"
-        android:layout_marginStart="136dp"
+        android:layout_marginStart="160dp"
         android:layout_marginTop="20dp"
         android:layout_toEndOf="@+id/imageButton"
         android:background="@null"
@@ -71,8 +80,8 @@
 
     <ImageButton
         android:id="@+id/imageButton3"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_alignTop="@+id/imageButton2"
         android:layout_alignEnd="@+id/tvPostBody"
         android:layout_marginTop="0dp"

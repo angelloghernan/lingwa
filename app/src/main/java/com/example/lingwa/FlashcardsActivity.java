@@ -52,7 +52,7 @@ import www.sanju.motiontoast.MotionToast;
 public class FlashcardsActivity extends AppCompatActivity {
 
     private static final String TAG = "FlashcardsActivity";
-    private static final int MAX_STRUGGLE_INDEX = 3;
+    private static final int MAX_STRUGGLE_INDEX = 1;
     ProgressBar pbFlashcardProgress;
     ProgressBar pbWordLoading;
     FrameLayout flFlashcard;
