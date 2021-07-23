@@ -10,12 +10,12 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Lingwa"
-        android:requestLegacyExternalStorage="true">
-
-        <activity android:name=".FlashcardsActivity"></activity>
+        android:theme="@style/Theme.Lingwa">
+        <activity android:name=".PostDetailsActivity"></activity>
+        <activity android:name=".FlashcardsActivity" />
         <activity android:name=".MyStuffActivity" />
         <activity android:name=".LoginActivity">
             <intent-filter>

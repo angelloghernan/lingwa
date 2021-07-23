@@ -175,7 +175,11 @@ public class MyProfileFragment extends Fragment {
 
     PostAdapter.AdapterCallback callback = new PostAdapter.AdapterCallback() {
         @Override
-        public void onPostSelected(int position, Content content) {
+        public void onContentSelected(int position, Content content) {
+        }
+
+        @Override
+        public void onPostSelected(int position, Post post) {
 
         }
     };

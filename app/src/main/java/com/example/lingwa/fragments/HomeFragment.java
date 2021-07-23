@@ -226,7 +226,7 @@ public class HomeFragment extends Fragment {
 
     PostAdapter.AdapterCallback callback = new PostAdapter.AdapterCallback() {
         @Override
-        public void onPostSelected(int position, Content content) {
+        public void onContentSelected(int position, Content content) {
             // Wrap up everything in the selected post and send this information to the content activity
             Intent intent = new Intent(getContext(), ContentActivity.class);
 
@@ -242,6 +242,11 @@ public class HomeFragment extends Fragment {
 
             intent.putExtra("content", Parcels.wrap(parcelableWrapper));
             startActivity(intent);
+        }
+
+        @Override
+        public void onPostSelected(int position, Post post) {
+
         }
     };
 }
