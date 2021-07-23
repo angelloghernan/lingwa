@@ -16,8 +16,8 @@
 
     <ImageView
         android:id="@+id/ivPostProfilePicture"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="15dp"
@@ -35,6 +35,7 @@
         android:layout_marginTop="0dp"
         android:layout_toEndOf="@+id/ivPostProfilePicture"
         android:text="Username"
+        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/ivPostProfilePicture"
         tools:layout_editor_absoluteY="15dp" />
 
@@ -46,7 +47,7 @@
         android:layout_alignBottom="@+id/ivPostProfilePicture"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="-20dp"
         android:layout_toEndOf="@+id/ivPostProfilePicture"

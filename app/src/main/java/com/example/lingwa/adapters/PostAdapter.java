@@ -110,11 +110,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            if (!postsShown) {
-                itemView.setOnClickListener(this::onClick);
-            } else {
-                itemView.setOnClickListener(onPostClicked);
-            }
+            itemView.setOnClickListener(this::onClick);
 
         }
 
@@ -123,17 +119,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
             int position = getAdapterPosition();
 
             if (position != RecyclerView.NO_POSITION) {
-                final Content content = contentPosts.get(position);
-                callback.onContentSelected(position, content);
+                if (postsShown) {
+                    final Post post = posts.get(position);
+                    callback.onPostSelected(position, post);
+                } else {
+                    final Content content = contentPosts.get(position);
+                    callback.onContentSelected(position, content);
+                }
             }
         }
-
-        View.OnClickListener onPostClicked = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        };
 
         public void bindPost(Post post) {
             ParseUser author = post.getAuthor();

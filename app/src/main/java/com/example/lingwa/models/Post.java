@@ -1,8 +1,12 @@
 package com.example.lingwa.models;
 
+import android.util.Log;
+
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+
+import java.util.Date;
 
 @ParseClassName("Post")
 public class Post extends ParseObject {
@@ -27,6 +31,8 @@ public class Post extends ParseObject {
         setNumComments(numComments);
     }
 
+
+
     public String getBody() { return getString(KEY_BODY); }
 
     public void setBody(String body) { put(KEY_BODY, body); }
@@ -42,4 +48,47 @@ public class Post extends ParseObject {
     public int getNumLikes() { return getInt(KEY_NUM_LIKES); }
 
     public void setNumLikes(int num) { put(KEY_NUM_LIKES, num); }
+
+
+    // Converts a date to a readable timestamp
+    // ie: "x hours ago" instead of "8:30 AM UTC 23 July 2021"
+    public static String toReadableTimestamp(Date timestamp) {
+        // Set time constants
+        int SECOND_MILLIS = 1000;
+        int MINUTE_MILLIS = 60 * SECOND_MILLIS;
+        int HOUR_MILLIS = 60 * MINUTE_MILLIS;
+        int DAY_MILLIS = 24 * HOUR_MILLIS;
+
+        try {
+            // Try to get the difference between the time now and time
+            // of post creation, and return a simplified timestamp
+            // based on that difference.
+            timestamp.getTime();
+            long time = timestamp.getTime();
+            long now = System.currentTimeMillis();
+
+            final long diff = now - time;
+            if (diff < MINUTE_MILLIS) {
+                return "just now";
+            } else if (diff < 2 * MINUTE_MILLIS) {
+                return "a minute ago";
+            } else if (diff < 50 * MINUTE_MILLIS) {
+                return diff / MINUTE_MILLIS + " minutes ago";
+            } else if (diff < 90 * MINUTE_MILLIS) {
+                return "an hour ago";
+            } else if (diff < 24 * HOUR_MILLIS) {
+                return diff / HOUR_MILLIS + " hours ago";
+            } else if (diff < 48 * HOUR_MILLIS) {
+                return "yesterday";
+            } else {
+                return diff / DAY_MILLIS + " days ago";
+            }
+        } catch (Exception e) {
+            Log.i("Error:", "getRelativeTimeAgo failed", e);
+            e.printStackTrace();
+        }
+
+        // if all fails, return an empty string so the timestamp doesn't show
+        return "";
+    }
 }

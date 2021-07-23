@@ -19,11 +19,13 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.example.lingwa.ContentActivity;
+import com.example.lingwa.PostDetailsActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Post;
 import com.example.lingwa.wrappers.ContentWrapper;
+import com.example.lingwa.wrappers.PostWrapper;
 import com.google.android.material.tabs.TabLayout;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -230,15 +232,7 @@ public class HomeFragment extends Fragment {
             // Wrap up everything in the selected post and send this information to the content activity
             Intent intent = new Intent(getContext(), ContentActivity.class);
 
-            ContentWrapper parcelableWrapper = new ContentWrapper(content.getObjectId(),
-                    content.getTitle(), content.getAuthor());
-            parcelableWrapper.contentType = content.getContentType();
-            if (parcelableWrapper.contentType.equals(Content.TYPE_BOOK)) {
-                parcelableWrapper.attachmentUrl = content.getAttachment().getUrl();
-            } else {
-                parcelableWrapper.body = content.getBody();
-            }
-            parcelableWrapper.thumbnailUrl = content.getThumbnail().getUrl();
+            ContentWrapper parcelableWrapper = ContentWrapper.fromContent(content);
 
             intent.putExtra("content", Parcels.wrap(parcelableWrapper));
             startActivity(intent);
@@ -246,7 +240,12 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onPostSelected(int position, Post post) {
+            Intent intent = new Intent(getContext(), PostDetailsActivity.class);
 
+            PostWrapper postWrapper = PostWrapper.fromPost(post);
+
+            intent.putExtra("post", Parcels.wrap(postWrapper));
+            startActivity(intent);
         }
     };
 }
