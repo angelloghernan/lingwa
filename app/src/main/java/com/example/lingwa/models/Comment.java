@@ -13,6 +13,11 @@ public class Comment extends ParseObject {
 
     }
 
+    public Comment(ParseUser author, Post replyingTo) {
+        this.setAuthor(author);
+        this.setReplyingTo(replyingTo);
+    }
+
     public ParseUser getAuthor() { return getParseUser(KEY_AUTHOR); }
 
     public void setAuthor(ParseUser author) { put(KEY_AUTHOR, author); }
