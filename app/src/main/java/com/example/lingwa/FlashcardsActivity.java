@@ -52,7 +52,7 @@ import www.sanju.motiontoast.MotionToast;
 public class FlashcardsActivity extends AppCompatActivity {
 
     private static final String TAG = "FlashcardsActivity";
-    private static final int MAX_STRUGGLE_INDEX = 1;
+    private static final int MAX_STRUGGLE_INDEX = 3;
     ProgressBar pbFlashcardProgress;
     ProgressBar pbWordLoading;
     FrameLayout flFlashcard;
@@ -258,34 +258,6 @@ public class FlashcardsActivity extends AppCompatActivity {
             flashcardFlipped = !flashcardFlipped;
         }
     };
-
-    /*
-    private void showQuiz() {
-        // If there is no translation for this word yet
-        if (wordTranslation == null) {
-            pbWordLoading.setVisibility(View.VISIBLE);
-            pbWordLoading.setActivated(true);
-            Translator.translateWord(currentWord, "es", "en", new Translator.TranslatorCallback() {
-                @Override
-                public void onTranslationSuccess(String translation) {
-                    wordTranslation = translation.toLowerCase();
-                    pbWordLoading.setVisibility(View.INVISIBLE);
-                    pbWordLoading.setActivated(false);
-                    showQuizFragment();
-                }
-
-                @Override
-                public void onTranslationFailure(Exception e) {
-                    Log.e(TAG, "on failure to translate word: " + e.toString());
-                }
-            });
-        }
-
-        else {
-            showQuizFragment();
-        }
-    }
-    */
 
     void showQuizFragment() {
         quizFragment = QuizFragment.newInstance(currentWord, wordTranslation);

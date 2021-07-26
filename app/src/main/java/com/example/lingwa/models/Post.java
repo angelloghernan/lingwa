@@ -2,6 +2,8 @@ package com.example.lingwa.models;
 
 import android.util.Log;
 
+import com.example.lingwa.util.PostInteractions;
+import com.example.lingwa.wrappers.PostWrapper;
 import com.parse.GetCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
@@ -17,6 +19,9 @@ public class Post extends ParseObject {
     public static final String KEY_AUTHOR = "author";
     public static final String KEY_NUM_COMMENTS = "numComments";
     public static final String KEY_NUM_LIKES = "numLikes";
+
+    public boolean liked = false;
+    public boolean likesFetched = false;
 
 
     public Post() {
@@ -34,7 +39,11 @@ public class Post extends ParseObject {
         setNumComments(numComments);
     }
 
-
+    public void updateFromWrapper(PostWrapper postWrapper) {
+        setNumLikes(postWrapper.numLikes);
+        setNumComments(postWrapper.numComments);
+        this.liked = postWrapper.liked;
+    }
 
     public String getBody() { return getString(KEY_BODY); }
 
@@ -55,7 +64,7 @@ public class Post extends ParseObject {
     public boolean isLikedByUser(ParseUser user) {
         ParseQuery<UserLike> likeQuery = ParseQuery.getQuery(UserLike.class);
         likeQuery.whereEqualTo(UserLike.KEY_LIKED_BY, user);
-        likeQuery.whereEqualTo(UserLike.KEY_LIKED_POST, this);
+        likeQuery.whereEqualTo(UserLike.KEY_LIKED_POST, ParseObject.createWithoutData(Post.class, this.getObjectId()));
 
         try {
             UserLike entry = likeQuery.getFirst();

@@ -1,5 +1,6 @@
 package com.example.lingwa.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -53,6 +54,8 @@ public class HomeFragment extends Fragment {
     public static final String KEY_POST_LIST = "postList";
     public static final String KEY_CONTENT_LIST = "contentList";
     public static final String KEY_RECYCLER_VIEW_STATE = "rvState";
+    public static final int POST_DETAILS_REQUEST = 101;
+
     protected PostAdapter adapter;
     protected List<Content> contentList;
     protected List<Post> postList;
@@ -93,12 +96,14 @@ public class HomeFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
+        /*
         if (savedInstanceState != null) {
             contentList = Parcels.unwrap(savedInstanceState.getParcelable(KEY_CONTENT_LIST));
             postList = Parcels.unwrap(savedInstanceState.getParcelable(KEY_POST_LIST));
             rvState = Parcels.unwrap(savedInstanceState.getParcelable(KEY_RECYCLER_VIEW_STATE));
             viewRestored = true;
         }
+        */
     }
 
     @Override
@@ -246,9 +251,22 @@ public class HomeFragment extends Fragment {
             PostWrapper postWrapper = PostWrapper.fromPost(post);
 
             intent.putExtra("post", Parcels.wrap(postWrapper));
-            startActivity(intent);
+            intent.putExtra("position", position);
+            startActivityForResult(intent, POST_DETAILS_REQUEST);
         }
     };
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            return;
+        }
 
+        if (requestCode == POST_DETAILS_REQUEST) {
+            PostWrapper postWrapper = Parcels.unwrap(data.getParcelableExtra("postWrapper"));
+            int position = data.getIntExtra("position", 0);
+            postList.get(position).updateFromWrapper(postWrapper);
+            adapter.notifyItemChanged(position);
+        }
+    }
 }

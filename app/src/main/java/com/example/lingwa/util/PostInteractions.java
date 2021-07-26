@@ -6,6 +6,7 @@ import android.widget.ImageButton;
 
 import com.example.lingwa.models.Post;
 import com.example.lingwa.models.UserLike;
+import com.example.lingwa.wrappers.PostWrapper;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -18,7 +19,8 @@ import java.util.List;
 public class PostInteractions {
     private static final String TAG = "PostInteractions";
     Post post;
-    boolean postLiked;
+
+    public boolean postLiked;
 
     public PostInteractions(Post post) {
         this.post = post;
@@ -58,6 +60,7 @@ public class PostInteractions {
                     return;
                 }
                 postLiked = false;
+                post.liked = false;
                 entry.deleteEventually();
                 likedPost.saveEventually();
             }
@@ -73,6 +76,8 @@ public class PostInteractions {
                     Log.e(TAG, "error saving post: " + e.toString());
                     return;
                 }
+                postLiked = true;
+                post.liked = true;
                 likedPost.saveEventually();
             }
         });

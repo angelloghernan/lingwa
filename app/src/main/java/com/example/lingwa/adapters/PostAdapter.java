@@ -153,8 +153,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
                         .into(ivPostProfilePicture);
             }
 
+            boolean liked;
+            if (!post.likesFetched) {
+                liked = post.isLikedByUser(ParseUser.getCurrentUser());
+                post.likesFetched = true;
+            } else {
+                liked = post.liked;
+            }
+
+            post.liked = liked;
+
             PostInteractions interactionHandler = new PostInteractions(post);
+            interactionHandler.postLiked = liked;
+            ibLike.setSelected(liked);
             ibLike.setOnClickListener(interactionHandler.onLikeButtonClicked);
+
             tvPostUsername.setText(author.getUsername());
             tvPostBody.setText(post.getBody());
         }

@@ -1,5 +1,6 @@
 package com.example.lingwa.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -51,6 +52,7 @@ public class MyProfileFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static final String TAG = "MyProfileFragment";
+    public static final int POST_DETAILS_REQUEST = 101;
 
     private String mParam1;
     private String mParam2;
@@ -188,7 +190,21 @@ public class MyProfileFragment extends Fragment {
             PostWrapper postWrapper = PostWrapper.fromPost(post);
 
             intent.putExtra("post", Parcels.wrap(postWrapper));
-            startActivity(intent);
+            startActivityForResult(intent, POST_DETAILS_REQUEST);
         }
     };
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            return;
+        }
+
+        if (requestCode == POST_DETAILS_REQUEST) {
+            PostWrapper postWrapper = Parcels.unwrap(data.getParcelableExtra("postWrapper"));
+            int position = data.getIntExtra("position", 0);
+            postList.get(position).updateFromWrapper(postWrapper);
+            adapter.notifyItemChanged(position);
+        }
+    }
 }
