@@ -9,7 +9,9 @@ import com.example.lingwa.models.UserLike;
 import com.example.lingwa.wrappers.PostWrapper;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
+import com.parse.ParseACL;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -20,10 +22,11 @@ public class PostInteractions {
     private static final String TAG = "PostInteractions";
     Post post;
 
-    public boolean postLiked;
+    private boolean postLiked;
 
-    public PostInteractions(Post post) {
+    public PostInteractions(Post post, boolean postliked) {
         this.post = post;
+        this.postLiked = postliked;
     }
 
     public View.OnClickListener onLikeButtonClicked = new View.OnClickListener() {
@@ -49,7 +52,7 @@ public class PostInteractions {
 
     void unlikePost(Post likedPost) {
         ParseQuery<UserLike> likeQuery = ParseQuery.getQuery(UserLike.class);
-        likeQuery.whereEqualTo(UserLike.KEY_LIKED_POST, likedPost);
+        // likeQuery.whereEqualTo(UserLike.KEY_LIKED_POST, ParseObject.createWithoutData(Post.class, likedPost.getObjectId()));
         likeQuery.whereEqualTo(UserLike.KEY_LIKED_BY, ParseUser.getCurrentUser());
 
         likeQuery.getFirstInBackground(new GetCallback<UserLike>() {
@@ -61,8 +64,13 @@ public class PostInteractions {
                 }
                 postLiked = false;
                 post.liked = false;
-                entry.deleteEventually();
-                likedPost.saveEventually();
+                try {
+                    entry.delete();
+                    Log.i(TAG, entry.getObjectId());
+                } catch (ParseException parseException) {
+                    parseException.printStackTrace();
+                }
+                likedPost.saveInBackground();
             }
         });
     }
@@ -78,7 +86,7 @@ public class PostInteractions {
                 }
                 postLiked = true;
                 post.liked = true;
-                likedPost.saveEventually();
+                likedPost.saveInBackground();
             }
         });
     }

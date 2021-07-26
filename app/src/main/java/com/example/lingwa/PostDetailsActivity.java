@@ -63,7 +63,7 @@ public class PostDetailsActivity extends AppCompatActivity {
 
         try {
             post = postQuery.getFirst();
-            PostInteractions interactionsHandler = new PostInteractions(post);
+            PostInteractions interactionsHandler = new PostInteractions(post, postWrapper.liked);
             ibPostDetailsLike.setOnClickListener(interactionsHandler.onLikeButtonClicked);
             post.liked = postWrapper.liked;
         } catch (ParseException e) {

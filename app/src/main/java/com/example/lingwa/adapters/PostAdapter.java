@@ -163,8 +163,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
 
             post.liked = liked;
 
-            PostInteractions interactionHandler = new PostInteractions(post);
-            interactionHandler.postLiked = liked;
+            PostInteractions interactionHandler = new PostInteractions(post, liked);
             ibLike.setSelected(liked);
             ibLike.setOnClickListener(interactionHandler.onLikeButtonClicked);
 
