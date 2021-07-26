@@ -1,6 +1,7 @@
 package com.example.lingwa.adapters;
 
 import android.content.Context;
+import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.example.lingwa.R;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Post;
+import com.example.lingwa.util.PostInteractions;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 
@@ -107,6 +109,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
         TextView tvPostBody;
         TextView tvPostUsername;
         ImageView ivPostProfilePicture;
+        ImageButton ibLike;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -136,6 +139,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
             tvPostBody = itemView.findViewById(R.id.tvPostBody);
             tvPostUsername = itemView.findViewById(R.id.tvPostUsername);
             ivPostProfilePicture = itemView.findViewById(R.id.ivPostProfilePicture);
+            ibLike = itemView.findViewById(R.id.ibLike);
 
             if (profilePicture != null) {
                 Glide.with(context)
@@ -149,6 +153,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
                         .into(ivPostProfilePicture);
             }
 
+            PostInteractions interactionHandler = new PostInteractions(post);
+            ibLike.setOnClickListener(interactionHandler.onLikeButtonClicked);
             tvPostUsername.setText(author.getUsername());
             tvPostBody.setText(post.getBody());
         }

@@ -2,8 +2,11 @@ package com.example.lingwa.models;
 
 import android.util.Log;
 
+import com.parse.GetCallback;
 import com.parse.ParseClassName;
+import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.Date;
@@ -49,6 +52,21 @@ public class Post extends ParseObject {
 
     public void setNumLikes(int num) { put(KEY_NUM_LIKES, num); }
 
+    public boolean isLikedByUser(ParseUser user) {
+        ParseQuery<UserLike> likeQuery = ParseQuery.getQuery(UserLike.class);
+        likeQuery.whereEqualTo(UserLike.KEY_LIKED_BY, user);
+        likeQuery.whereEqualTo(UserLike.KEY_LIKED_POST, this);
+
+        try {
+            UserLike entry = likeQuery.getFirst();
+            return true;
+        } catch (ParseException e) {
+            if (e.getCode() != ParseException.OBJECT_NOT_FOUND) {
+                Log.e("isLikedByUser", "error checking like table: " + e.toString());
+            }
+            return false;
+        }
+    }
 
     // Converts a date to a readable timestamp
     // ie: "x hours ago" instead of "8:30 AM UTC 23 July 2021"

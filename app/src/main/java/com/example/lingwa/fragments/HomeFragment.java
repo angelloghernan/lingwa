@@ -57,6 +57,7 @@ public class HomeFragment extends Fragment {
     protected List<Content> contentList;
     protected List<Post> postList;
     boolean viewRestored = false;
+
     Parcelable postListState;
     Parcelable contentListState;
     Parcelable rvState;
@@ -248,4 +249,6 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         }
     };
+
+
 }

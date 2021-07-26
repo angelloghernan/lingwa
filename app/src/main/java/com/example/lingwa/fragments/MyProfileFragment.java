@@ -20,15 +20,18 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.lingwa.LoginActivity;
 import com.example.lingwa.MyStuffActivity;
+import com.example.lingwa.PostDetailsActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Post;
+import com.example.lingwa.wrappers.PostWrapper;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import org.parceler.Parcels;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
@@ -180,7 +183,12 @@ public class MyProfileFragment extends Fragment {
 
         @Override
         public void onPostSelected(int position, Post post) {
+            Intent intent = new Intent(getContext(), PostDetailsActivity.class);
 
+            PostWrapper postWrapper = PostWrapper.fromPost(post);
+
+            intent.putExtra("post", Parcels.wrap(postWrapper));
+            startActivity(intent);
         }
     };
 }

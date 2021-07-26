@@ -3,9 +3,11 @@ package com.example.lingwa.util;
 import android.app.Application;
 
 import com.example.lingwa.BuildConfig;
+import com.example.lingwa.models.Comment;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Post;
 import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.models.UserLike;
 import com.example.lingwa.models.Word;
 import com.parse.Parse;
 import com.parse.ParseObject;
@@ -24,6 +26,8 @@ public class ParseApplication extends Application {
         ParseObject.registerSubclass(UserJoinWord.class);
         ParseObject.registerSubclass(Word.class);
         ParseObject.registerSubclass(Post.class);
+        ParseObject.registerSubclass(UserLike.class);
+        ParseObject.registerSubclass(Comment.class);
 
         Parse.initialize(new Parse.Configuration.Builder(this)
                 .applicationId(BuildConfig.BACK4APP_APP_ID)

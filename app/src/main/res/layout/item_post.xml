@@ -9,7 +9,7 @@
         android:id="@+id/vPostDivider"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_below="@id/imageButton2"
+        android:layout_below="@id/ibLike"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="2dp"
         android:background="?android:attr/listDivider" />
@@ -44,46 +44,46 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvPostUsername"
-        android:layout_alignBottom="@+id/ivPostProfilePicture"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="-20dp"
         android:layout_toEndOf="@+id/ivPostProfilePicture"
         android:text="Post content; lorem ipsum dolor sit amet"
         app:layout_constraintStart_toStartOf="@+id/tvPostUsername"
         app:layout_constraintTop_toBottomOf="@+id/tvPostUsername" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/ibComment"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_below="@+id/tvPostBody"
         android:layout_alignStart="@+id/ivPostProfilePicture"
         android:layout_marginStart="0dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:background="@null"
         android:scaleType="fitCenter"
         app:srcCompat="@drawable/ic_baseline_reply_24" />
 
     <ImageButton
-        android:id="@+id/imageButton2"
+        android:id="@+id/ibLike"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_below="@+id/tvPostBody"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="20dp"
-        android:layout_toEndOf="@+id/imageButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="153dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="8dp"
+        android:layout_toEndOf="@+id/ibComment"
         android:background="@null"
         android:scaleType="fitCenter"
-        app:srcCompat="@drawable/ic_outline_star_outline_24" />
+        app:srcCompat="@drawable/ic_like_button" />
 
     <ImageButton
-        android:id="@+id/imageButton3"
+        android:id="@+id/ibBookmark"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_alignTop="@+id/imageButton2"
+        android:layout_alignTop="@+id/ibLike"
         android:layout_alignEnd="@+id/tvPostBody"
         android:layout_marginTop="0dp"
         android:layout_marginEnd="0dp"
