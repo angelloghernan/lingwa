@@ -139,7 +139,7 @@ class SortByPriority implements Comparator<WordWrapper> {
     public static final String BY_USER = "user";
     public static final String BY_NOBODY = "unsaved";
     public static final int MAX_FAMILIARITY = 5;
-    public static final int MAX_STRUGGLE_INDEX = 3;
+    // public static final int MAX_STRUGGLE_INDEX = 3;
 
     @Override
     public int compare(WordWrapper o1, WordWrapper o2) {

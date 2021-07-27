@@ -101,8 +101,8 @@ public class SearchFragment extends Fragment {
                     Log.e(TAG, "error searching for users: " + e.toString());
                 }
 
-                userList = users;
                 pbSearch.setVisibility(View.INVISIBLE);
+                userList = users;
                 adapter.clear();
                 adapter.addAll(users);
                 adapter.notifyDataSetChanged();
@@ -114,6 +114,15 @@ public class SearchFragment extends Fragment {
         @Override
         public void onUserSelected(ParseUser user, int position) {
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            transaction.addToBackStack(null);
+
+            // If the selected user is the currently logged in user, then open their profile as usual
+            if (user.getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+                transaction.replace(R.id.flContainer, new MyProfileFragment()).commit();
+                return;
+            }
+
+            // else, create a new instance of the fragment with the selected user's information
             String profilePictureUrl = null;
             try {
                 profilePictureUrl = user.getParseFile("profilePicture").getUrl();
@@ -126,8 +135,6 @@ public class SearchFragment extends Fragment {
                             user.getUsername(),
                             user.getString("bio"),
                             profilePictureUrl);
-
-            transaction.addToBackStack(null);
 
             transaction.replace(R.id.flContainer, fragment).commit();
         }

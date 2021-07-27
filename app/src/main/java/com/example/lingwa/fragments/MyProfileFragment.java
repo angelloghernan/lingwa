@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -72,6 +73,8 @@ public class MyProfileFragment extends Fragment {
     TextView tvProfileBio;
     ImageView ivProfilePicture;
     RecyclerView rvMyPosts;
+    ProgressBar pbProfile;
+
     List<Post> postList;
     PostAdapter adapter;
 
@@ -129,6 +132,7 @@ public class MyProfileFragment extends Fragment {
         tvProfileUsername = view.findViewById(R.id.tvProfileUsername);
         ivProfilePicture = view.findViewById(R.id.ivProfilePicture);
         rvMyPosts = view.findViewById(R.id.rvMyPosts);
+        pbProfile = view.findViewById(R.id.pbProfile);
 
         // If there was no userId passed, we use the current user instead
         if (userId == null) {
@@ -295,6 +299,7 @@ public class MyProfileFragment extends Fragment {
                 adapter.clearPosts();
                 adapter.addAllPosts(posts);
                 adapter.notifyDataSetChanged();
+                pbProfile.setVisibility(View.INVISIBLE);
             }
         });
     }
