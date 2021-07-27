@@ -24,14 +24,17 @@ import com.example.lingwa.PostDetailsActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
+import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.example.lingwa.wrappers.PostWrapper;
 import com.google.android.material.tabs.TabLayout;
 import com.parse.FindCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import org.jetbrains.annotations.NotNull;
 import org.parceler.Parcels;
@@ -199,9 +202,13 @@ public class HomeFragment extends Fragment {
         contentQuery.setLimit(10);
         contentQuery.addDescendingOrder("createdAt");
 
+        ParseQuery<FollowEntry> innerFollowQuery = ParseQuery.getQuery(FollowEntry.class);
+        innerFollowQuery.whereEqualTo(FollowEntry.KEY_FOLLOWER, ParseUser.getCurrentUser());
+
         ParseQuery<Post> postQuery = ParseQuery.getQuery(Post.class);
         postQuery.setLimit(10);
         postQuery.include(Post.KEY_AUTHOR);
+        postQuery.whereMatchesKeyInQuery(Post.KEY_AUTHOR, FollowEntry.KEY_FOLLOWED, innerFollowQuery);
         postQuery.addDescendingOrder("createdAt");
 
         ExecutorService executor = Executors.newSingleThreadExecutor();

@@ -74,8 +74,8 @@ public class PostDetailsActivity extends AppCompatActivity {
         tvPostDetailsBody.setText(postWrapper.body);
         tvPostDetailsTimestamp.setText(Post.toReadableTimestamp(postWrapper.timestamp));
         tvDetailsLikeCount.setText(String.format(Locale.ENGLISH, "%d", postWrapper.numLikes));
+        ibPostDetailsLike.setSelected(postWrapper.liked);
 
-        ibPostDetailsLike.setSelected(true);
         ParseQuery<Post> postQuery = ParseQuery.getQuery(Post.class);
         postQuery.include(Post.KEY_AUTHOR);
         postQuery.whereEqualTo(Post.KEY_OBJECT_ID, postWrapper.objectId);
