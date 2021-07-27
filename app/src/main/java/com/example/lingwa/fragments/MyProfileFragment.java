@@ -48,14 +48,15 @@ import me.samlss.broccoli.Broccoli;
  */
 public class MyProfileFragment extends Fragment {
 
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_USERID = "user";
     private static final String TAG = "MyProfileFragment";
     public static final int POST_DETAILS_REQUEST = 101;
 
     private String mParam1;
     private String mParam2;
+
+    private ParseUser user;
+    boolean useCurrentUser = true;
 
     Button btnLogOut;
     Button btnMyStuff;
@@ -74,15 +75,13 @@ public class MyProfileFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param userId The id of the user to be displayed
      * @return A new instance of fragment MyProfileFragment.
      */
-    public static MyProfileFragment newInstance(String param1, String param2) {
+    public static MyProfileFragment newInstance(String userId) {
         MyProfileFragment fragment = new MyProfileFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_USERID, userId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -91,8 +90,8 @@ public class MyProfileFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mParam1 = getArguments().getString(ARG_USERID);
+            useCurrentUser = false;
         }
     }
 
@@ -114,12 +113,12 @@ public class MyProfileFragment extends Fragment {
         ivProfilePicture = view.findViewById(R.id.ivProfilePicture);
         rvMyPosts = view.findViewById(R.id.rvMyPosts);
 
-        ParseUser currentUser = ParseUser.getCurrentUser();
-        tvProfileUsername.setText(currentUser.getUsername());
-        tvProfileBio.setText(currentUser.getString("bio"));
-        if (currentUser.getParseFile("profilePicture") != null) {
+        ParseUser user = ParseUser.getCurrentUser();
+        tvProfileUsername.setText(user.getUsername());
+        tvProfileBio.setText(user.getString("bio"));
+        if (user.getParseFile("profilePicture") != null) {
             Glide.with(requireContext())
-                    .load(currentUser.getParseFile("profilePicture").getUrl())
+                    .load(user.getParseFile("profilePicture").getUrl())
                     .circleCrop()
                     .into(ivProfilePicture);
         } else {

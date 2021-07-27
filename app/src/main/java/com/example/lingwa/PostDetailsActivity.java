@@ -75,7 +75,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         tvPostDetailsTimestamp.setText(Post.toReadableTimestamp(postWrapper.timestamp));
         tvDetailsLikeCount.setText(String.format(Locale.ENGLISH, "%d", postWrapper.numLikes));
 
-        ibPostDetailsLike.setSelected(postWrapper.liked);
+        ibPostDetailsLike.setSelected(true);
         ParseQuery<Post> postQuery = ParseQuery.getQuery(Post.class);
         postQuery.include(Post.KEY_AUTHOR);
         postQuery.whereEqualTo(Post.KEY_OBJECT_ID, postWrapper.objectId);
@@ -100,10 +100,24 @@ public class PostDetailsActivity extends AppCompatActivity {
                     .into(ivPostDetailsProfile);
         }
 
-        Glide.with(this)
-                .load(ParseUser.getCurrentUser().getParseFile("profilePicture").getUrl())
-                .circleCrop()
-                .into(ivPDCurrentUserProfile);
+        String userProfileUrl;
+        try {
+            userProfileUrl = ParseUser.getCurrentUser().getParseFile("profilePicture").getUrl();
+        } catch (NullPointerException e) {
+            userProfileUrl = null;
+        }
+
+        if (userProfileUrl != null) {
+            Glide.with(this)
+                    .load(userProfileUrl)
+                    .circleCrop()
+                    .into(ivPDCurrentUserProfile);
+        } else {
+            Glide.with(this)
+                    .load(R.drawable.default_profile_picture)
+                    .circleCrop()
+                    .into(ivPDCurrentUserProfile);
+        }
 
         btnSubmitComment.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -2,45 +2,52 @@ package com.example.lingwa.fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.lingwa.R;
+import com.example.lingwa.adapters.SearchAdapter;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SearchFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class SearchFragment extends Fragment {
 
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "SearchFragment";
+    EditText etSearch;
+    Button btnSearch;
+    RecyclerView rvSearch;
+    ProgressBar pbSearch;
 
-    private String mParam1;
-    private String mParam2;
+    SearchAdapter adapter;
+    List<ParseUser> userList;
 
     public SearchFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SearchFragment.
-     */
     public static SearchFragment newInstance(String param1, String param2) {
         SearchFragment fragment = new SearchFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,10 +55,6 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -60,4 +63,58 @@ public class SearchFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_search, container, false);
     }
+
+    @Override
+    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        etSearch = view.findViewById(R.id.etSearch);
+        btnSearch = view.findViewById(R.id.btnSearch);
+        rvSearch = view.findViewById(R.id.rvSearch);
+        pbSearch = view.findViewById(R.id.pbSearch);
+
+        userList = new ArrayList<>();
+        adapter = new SearchAdapter(view.getContext(), userList, callback);
+        rvSearch.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        rvSearch.setAdapter(adapter);
+
+        btnSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pbSearch.setVisibility(View.VISIBLE);
+                String query = etSearch.getText().toString();
+                if (query.equals("")) {
+                    return;
+                }
+                queryForUser(query);
+            }
+        });
+
+    }
+
+    void queryForUser(String query) {
+        ParseQuery<ParseUser> userQuery = ParseQuery.getQuery(ParseUser.class);
+        userQuery.whereStartsWith("username", query);
+        userQuery.setLimit(10);
+        userQuery.findInBackground(new FindCallback<ParseUser>() {
+            @Override
+            public void done(List<ParseUser> users, ParseException e) {
+                if (e != null) {
+                    Log.e(TAG, "error searching for users: " + e.toString());
+                }
+
+                userList = users;
+                pbSearch.setVisibility(View.INVISIBLE);
+                adapter.clear();
+                adapter.addAll(users);
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    SearchAdapter.AdapterCallback callback = new SearchAdapter.AdapterCallback() {
+        @Override
+        public void onUserSelected(ParseUser user, int position) {
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.flContainer, new MyProfileFragment()).commit();
+        }
+    };
 }

@@ -115,22 +115,26 @@ public class HomeFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull @NotNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        /*
         rvState = rvHomeFeed.getLayoutManager().onSaveInstanceState();
         contentListState = Parcels.wrap(contentList);
         postListState = Parcels.wrap(postList);
         outState.putParcelable(KEY_CONTENT_LIST, contentListState);
         outState.putParcelable(KEY_POST_LIST, postListState);
         outState.putParcelable(KEY_RECYCLER_VIEW_STATE, rvState);
+         */
     }
 
     @Override
     public void onViewStateRestored(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
+        /*
         if (savedInstanceState != null) {
             postListState = savedInstanceState.getParcelable(KEY_POST_LIST);
             contentListState = savedInstanceState.getParcelable(KEY_CONTENT_LIST);
             rvState = savedInstanceState.getParcelable(KEY_RECYCLER_VIEW_STATE);
         }
+        */
     }
 
     @Override
@@ -148,12 +152,10 @@ public class HomeFragment extends Fragment {
         postList = new ArrayList<>();
         queryForContentAndPosts();
 
-        if (!viewRestored) {
-            adapter = new PostAdapter(view.getContext(), contentList, postList, callback);
-            rvHomeFeed = view.findViewById(R.id.rvHomeFeed);
-            rvHomeFeed.setAdapter(adapter);
-            rvHomeFeed.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        }
+        adapter = new PostAdapter(view.getContext(), contentList, postList, callback);
+        rvHomeFeed = view.findViewById(R.id.rvHomeFeed);
+        rvHomeFeed.setAdapter(adapter);
+        rvHomeFeed.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
         TabLayout tlHomeTabs = view.findViewById(R.id.tlHomeTabs);
         tlHomeTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
