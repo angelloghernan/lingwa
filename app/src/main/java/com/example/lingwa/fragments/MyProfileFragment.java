@@ -48,12 +48,17 @@ import me.samlss.broccoli.Broccoli;
  */
 public class MyProfileFragment extends Fragment {
 
-    private static final String ARG_USERID = "user";
+    private static final String ARG_USERID = "userid";
+    public static final String ARG_USERNAME = "username";
+    public static final String ARG_BIO = "bio";
+    public static final String ARG_PROFILE_PICTURE = "profilePicture";
     private static final String TAG = "MyProfileFragment";
     public static final int POST_DETAILS_REQUEST = 101;
 
-    private String mParam1;
-    private String mParam2;
+    private String userId;
+    private String username;
+    private String bio;
+    private String profilePictureUrl = null;
 
     private ParseUser user;
     boolean useCurrentUser = true;
@@ -76,12 +81,17 @@ public class MyProfileFragment extends Fragment {
      * this fragment using the provided parameters.
      *
      * @param userId The id of the user to be displayed
+     * @param username Username of the user
+     * @param bio Bio of the user
      * @return A new instance of fragment MyProfileFragment.
      */
-    public static MyProfileFragment newInstance(String userId) {
+    public static MyProfileFragment newInstance(String userId, String username, String bio, String profilePictureUrl) {
         MyProfileFragment fragment = new MyProfileFragment();
         Bundle args = new Bundle();
         args.putString(ARG_USERID, userId);
+        args.putString(ARG_USERNAME, username);
+        args.putString(ARG_BIO, bio);
+        args.putString(ARG_PROFILE_PICTURE, profilePictureUrl);
         fragment.setArguments(args);
         return fragment;
     }
@@ -90,8 +100,11 @@ public class MyProfileFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_USERID);
-            useCurrentUser = false;
+            userId = getArguments().getString(ARG_USERID);
+            username = getArguments().getString(ARG_USERNAME);
+            bio = getArguments().getString(ARG_BIO);
+        } else {
+            userId = username = bio = null;
         }
     }
 
@@ -113,10 +126,21 @@ public class MyProfileFragment extends Fragment {
         ivProfilePicture = view.findViewById(R.id.ivProfilePicture);
         rvMyPosts = view.findViewById(R.id.rvMyPosts);
 
-        ParseUser user = ParseUser.getCurrentUser();
-        tvProfileUsername.setText(user.getUsername());
-        tvProfileBio.setText(user.getString("bio"));
-        if (user.getParseFile("profilePicture") != null) {
+        if (userId == null) {
+            ParseUser user = ParseUser.getCurrentUser();
+            userId = user.getObjectId();
+            username = user.getUsername();
+            bio = user.getString("bio");
+            try {
+                profilePictureUrl = user.getParseFile("profilePicture").getUrl();
+            } catch (NullPointerException e) {
+                Log.e(TAG, "error getting profilepicture: " + e.toString());
+            }
+        }
+
+        tvProfileUsername.setText(username);
+        tvProfileBio.setText(bio);
+        if (profilePictureUrl != null) {
             Glide.with(requireContext())
                     .load(user.getParseFile("profilePicture").getUrl())
                     .circleCrop()
@@ -134,7 +158,7 @@ public class MyProfileFragment extends Fragment {
         adapter.setPostsShown(true);
         rvMyPosts.setAdapter(adapter);
         rvMyPosts.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        fetchMyPosts();
+        fetchPosts();
 
         btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,9 +178,10 @@ public class MyProfileFragment extends Fragment {
         });
     }
 
-    private void fetchMyPosts() {
+    private void fetchPosts() {
+        ParseUser user = ParseUser.createWithoutData(ParseUser.class, userId);
         ParseQuery<Post> myPostsQuery = ParseQuery.getQuery(Post.class);
-        myPostsQuery.whereEqualTo(Post.KEY_AUTHOR, ParseUser.getCurrentUser());
+        myPostsQuery.whereEqualTo(Post.KEY_AUTHOR, user);
         myPostsQuery.setLimit(20);
         myPostsQuery.include(Post.KEY_AUTHOR);
         myPostsQuery.addDescendingOrder("createdAt");
@@ -172,7 +197,6 @@ public class MyProfileFragment extends Fragment {
                 adapter.clearPosts();
                 adapter.addAllPosts(posts);
                 adapter.notifyDataSetChanged();
-
             }
         });
     }

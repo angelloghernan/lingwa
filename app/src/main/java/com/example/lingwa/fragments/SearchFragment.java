@@ -114,7 +114,22 @@ public class SearchFragment extends Fragment {
         @Override
         public void onUserSelected(ParseUser user, int position) {
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.flContainer, new MyProfileFragment()).commit();
+            String profilePictureUrl = null;
+            try {
+                profilePictureUrl = user.getParseFile("profilePicture").getUrl();
+            } catch (NullPointerException e) {
+                Log.i(TAG, "could not get profile picture for user " + user.getUsername());
+            }
+
+            MyProfileFragment fragment = MyProfileFragment
+                    .newInstance(user.getObjectId(),
+                            user.getUsername(),
+                            user.getString("bio"),
+                            profilePictureUrl);
+
+            transaction.addToBackStack(null);
+
+            transaction.replace(R.id.flContainer, fragment).commit();
         }
     };
 }
