@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -35,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         if (ParseUser.getCurrentUser() != null) {
+            saveUserToInstallation();
             goMainActivity();
         }
 
@@ -93,6 +95,7 @@ public class LoginActivity extends AppCompatActivity {
                     Log.e(TAG, "Issue with login", e);
                     return;
                 }
+                saveUserToInstallation();
                 goMainActivity();
                 Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
             }
@@ -102,5 +105,11 @@ public class LoginActivity extends AppCompatActivity {
     private void goMainActivity() {
         Intent i = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(i);
+    }
+
+    private void saveUserToInstallation() {
+        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+        installation.put("user",ParseUser.getCurrentUser());
+        installation.saveInBackground();
     }
 }

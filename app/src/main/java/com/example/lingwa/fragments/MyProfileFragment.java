@@ -31,16 +31,20 @@ import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;
+import com.example.lingwa.util.ParseApplication;
 import com.example.lingwa.wrappers.PostWrapper;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
@@ -202,6 +206,8 @@ public class MyProfileFragment extends Fragment {
                     public void done(ParseException e) {
                         userFollows = true;
                         btnLeft.setText(R.string.unfollow);
+                        ParseApplication.createPushNotification(ParseUser.getCurrentUser().getUsername() + " followed you!",
+                                "New Follower", user);
                     }
                 });
             } else {
