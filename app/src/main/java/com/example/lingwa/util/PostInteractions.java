@@ -90,6 +90,9 @@ public class PostInteractions {
                 }
                 postLiked = true;
                 post.liked = true;
+                ParseApplication.createPushNotification(ParseUser.getCurrentUser().getUsername() + " liked your post!",
+                        "Liked Post",
+                        likedPost.getAuthor());
                 likedPost.saveInBackground();
             }
         });
