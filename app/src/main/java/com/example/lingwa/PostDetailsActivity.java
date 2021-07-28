@@ -117,6 +117,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         } else {
             Glide.with(this)
                     .load(R.drawable.default_profile_picture)
+                    .circleCrop()
                     .into(ivPostDetailsProfile);
         }
 
@@ -127,6 +128,8 @@ public class PostDetailsActivity extends AppCompatActivity {
             userProfileUrl = null;
         }
 
+        // todo: refactor code so that this code can be called in one function (since it is
+        // nearly identical to the code above, besides the URL and imageview)
         if (userProfileUrl != null) {
             Glide.with(this)
                     .load(userProfileUrl)

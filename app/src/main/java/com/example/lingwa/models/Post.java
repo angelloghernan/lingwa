@@ -42,7 +42,9 @@ public class Post extends ParseObject {
         setAuthor(user);
         setNumLikes(numLikes);
         setNumComments(numComments);
-        setReplyingTo(replyingTo);
+        if (replyingTo != null) {
+            setReplyingTo(replyingTo);
+        }
     }
 
     public void updateFromWrapper(PostWrapper postWrapper) {

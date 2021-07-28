@@ -2,6 +2,7 @@ package com.example.lingwa.wrappers;
 
 import com.example.lingwa.models.Post;
 import com.example.lingwa.util.PostInteractions;
+import com.parse.ParseException;
 import com.parse.ParseUser;
 
 import org.parceler.Parcel;
@@ -32,7 +33,11 @@ public class PostWrapper {
         postWrapper.authorId = author.getObjectId();
         postWrapper.authorUsername = author.getUsername();
 
-        postWrapper.authorProfilePictureUrl = author.getParseFile("profilePicture").getUrl();
+        try {
+            postWrapper.authorProfilePictureUrl = author.getParseFile("profilePicture").getUrl();
+        } catch (NullPointerException e) {
+            postWrapper.authorProfilePictureUrl = null;
+        }
 
         postWrapper.objectId = post.getObjectId();
         postWrapper.body = post.getBody();
