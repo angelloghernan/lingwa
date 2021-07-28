@@ -185,4 +185,12 @@
         android:layout_marginTop="1dp"
         android:layout_marginEnd="16dp"
         android:text="SUBMIT" />
+
+    <ProgressBar
+        android:id="@+id/pbComments"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminateTint="@android:color/holo_green_light" />
 </RelativeLayout>

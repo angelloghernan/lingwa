@@ -213,12 +213,25 @@ public class HomeFragment extends Fragment {
         ParseQuery<FollowEntry> innerFollowQuery = ParseQuery.getQuery(FollowEntry.class);
         innerFollowQuery.whereEqualTo(FollowEntry.KEY_FOLLOWER, ParseUser.getCurrentUser());
 
-        ParseQuery<Post> postQuery = ParseQuery.getQuery(Post.class);
-        postQuery.setLimit(10);
-        postQuery.include(Post.KEY_AUTHOR);
-        postQuery.whereMatchesKeyInQuery(Post.KEY_AUTHOR, FollowEntry.KEY_FOLLOWED, innerFollowQuery);
-        postQuery.whereDoesNotExist(Post.KEY_REPLYING_TO);
-        postQuery.addDescendingOrder(ParseObject.KEY_CREATED_AT);
+        // Query for followed users' posts
+        ParseQuery<Post> followedPosts = ParseQuery.getQuery(Post.class);
+        followedPosts.whereMatchesKeyInQuery(Post.KEY_AUTHOR, FollowEntry.KEY_FOLLOWED, innerFollowQuery);
+        followedPosts.whereDoesNotExist(Post.KEY_REPLYING_TO);
+
+        // Query for user's own posts
+        ParseQuery<Post> ownPosts = ParseQuery.getQuery(Post.class);
+        ownPosts.whereEqualTo(Post.KEY_AUTHOR, ParseUser.getCurrentUser());
+        ownPosts.whereDoesNotExist(Post.KEY_REPLYING_TO);
+
+        List<ParseQuery<Post>> queryList = new ArrayList<>();
+        queryList.add(ownPosts);
+        queryList.add(followedPosts);
+
+        // Combine queries to query for both user's own posts and followed users' posts
+        ParseQuery<Post> fullPostQuery = ParseQuery.or(queryList);
+        fullPostQuery.setLimit(10);
+        fullPostQuery.include(Post.KEY_AUTHOR);
+        fullPostQuery.addDescendingOrder(Post.KEY_CREATED_AT);
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -226,7 +239,7 @@ public class HomeFragment extends Fragment {
         executor.execute(() -> {
             try {
                 contentList = contentQuery.find();
-                postList = postQuery.find();
+                postList = fullPostQuery.find();
             } catch (ParseException e) {
                 Log.e(TAG, e.toString());
             }

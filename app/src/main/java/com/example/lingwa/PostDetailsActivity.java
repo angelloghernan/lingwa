@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -62,6 +63,7 @@ public class PostDetailsActivity extends AppCompatActivity {
     ImageButton ibPostDetailsLike;
     Button btnSubmitComment;
     EditText etCommentBody;
+    ProgressBar pbComments;
 
     ImageView ivPostDetailsProfile;
     ImageView ivPDCurrentUserProfile;
@@ -86,6 +88,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         ivPDCurrentUserProfile = findViewById(R.id.ivPDCurrentUserProfile);
         etCommentBody = findViewById(R.id.etCommentBody);
         btnSubmitComment = findViewById(R.id.btnSubmitComment);
+        pbComments = findViewById(R.id.pbComments);
 
         tvPostDetailsUsername.setText(postWrapper.authorUsername);
         tvPostDetailsBody.setText(postWrapper.body);
@@ -169,6 +172,10 @@ public class PostDetailsActivity extends AppCompatActivity {
         executor.execute(() -> {
             try {
                 commentList = commentQuery.find();
+                for (int i = 0; i < commentList.size(); i++) {
+                    Post comment = commentList.get(i);
+                    comment.liked = comment.isLikedByUser(ParseUser.getCurrentUser());
+                }
                 adapter.clearPosts();
                 adapter.addAllPosts(commentList);
             } catch (ParseException e) {
@@ -178,6 +185,7 @@ public class PostDetailsActivity extends AppCompatActivity {
 
             handler.post(() -> {
                 adapter.notifyDataSetChanged();
+                pbComments.setVisibility(View.INVISIBLE);
             });
 
         });
