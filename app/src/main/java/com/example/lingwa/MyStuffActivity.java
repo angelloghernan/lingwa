@@ -1,10 +1,15 @@
 package com.example.lingwa;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -30,6 +35,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.parceler.Parcels;
@@ -45,10 +51,13 @@ import java.util.Objects;
 import java.util.zip.ZipFile;
 
 import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.domain.TableOfContents;
 import nl.siegmann.epublib.epub.BookProcessor;
 import nl.siegmann.epublib.epub.EpubReader;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 import www.sanju.motiontoast.MotionToast;
 
 public class MyStuffActivity extends AppCompatActivity {
@@ -121,7 +130,7 @@ public class MyStuffActivity extends AppCompatActivity {
         }
 
         btnPractice.setOnClickListener(startPractice);
-        // btnUpload.setOnClickListener(uploadBook);
+        btnUpload.setOnClickListener(uploadBook);
     }
 
     // When the practice button is clicked, make sure there are words available for the user before
@@ -147,25 +156,64 @@ public class MyStuffActivity extends AppCompatActivity {
         }
     };
 
-    /*
     View.OnClickListener uploadBook = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            // ActivityResultContracts.RequestPermission requestPermission = new ActivityResultContracts.RequestPermission();
+            methodRequiresPermission();
             Intent intent  = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            intent.setType("*\/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
             startActivityForResult(intent, UPLOAD_REQUEST_CODE);
         }
     };
-     */
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            return;
+        }
+
         pbStuffLoading.setVisibility(View.INVISIBLE);
         pbStuffLoading.setActivated(false);
-        if (resultCode == Activity.RESULT_OK && requestCode == FLASHCARD_REQUEST_CODE && data != null) {
+
+
+        if (requestCode == FLASHCARD_REQUEST_CODE) {
             // get the new word (wrapper) list so we can use the familiarity scores
             wordList = Parcels.unwrap(data.getParcelableExtra("wordList"));
+        } else if (requestCode == UPLOAD_REQUEST_CODE) {
+            ContentResolver resolver = context.getContentResolver();
+            Uri uri = data.getData();
+            File epub = new File(uri.getPath());
+            try {
+                InputStream inputStream = resolver.openInputStream(uri);
+                Book book = (new EpubReader()).readEpub(inputStream);
+                Log.i(TAG, book.getTitle());
+                List<Resource> resources = book.getContents();
+            } catch (IOException e) {
+                Log.e(TAG, "Error opening epub: " + e.toString());
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @AfterPermissionGranted(1)
+    private void methodRequiresPermission() {
+        String[] perms = {Manifest.permission.READ_EXTERNAL_STORAGE};
+        if (EasyPermissions.hasPermissions(this, perms)) {
+            // wait
+        } else {
+            // Do not have permissions, request them now
+            EasyPermissions.requestPermissions(this, "Lingwa needs to read external storage to upload epub books.",
+                    1, perms);
         }
     }
 }
