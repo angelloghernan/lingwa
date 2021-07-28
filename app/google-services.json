@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "1070394322763",
-    "project_id": "lingwa-26939",
-    "storage_bucket": "lingwa-26939.appspot.com"
+    "project_number": "644753770635",
+    "project_id": "lingwa-829e2",
+    "storage_bucket": "lingwa-829e2.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1070394322763:android:94dc28476c168dbb3942ce",
+        "mobilesdk_app_id": "1:644753770635:android:1b41347d0dbd2c3a0a2c8e",
         "android_client_info": {
           "package_name": "com.example.lingwa"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1070394322763-8ipibgs0snhnilm4cs6jmk66p2ln1er8.apps.googleusercontent.com",
+          "client_id": "644753770635-ltp7722295s7c3igtsob8jnvs83liqse.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCiWM-j0jhIbMNyaZoDd-uCnx9EjyzB7ng"
+          "current_key": "AIzaSyApJ5aU-FuZCKXe0mIy6IwKZUWbCHitMzU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1070394322763-8ipibgs0snhnilm4cs6jmk66p2ln1er8.apps.googleusercontent.com",
+              "client_id": "644753770635-ltp7722295s7c3igtsob8jnvs83liqse.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
