@@ -40,7 +40,7 @@ public class ParseApplication extends Application {
                 .build());
 
         ParseInstallation installation = ParseInstallation.getCurrentInstallation();
-        installation.put("GCMSenderId", "644753770635");
+        installation.put("GCMSenderId", "1070394322763");
         installation.saveInBackground();
     }
 

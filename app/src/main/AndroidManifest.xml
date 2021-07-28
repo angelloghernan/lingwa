@@ -42,7 +42,7 @@
             android:value="@string/back4app_client_key" />
 
         <meta-data android:name="com.parse.push.gcm_sender_id"
-            android:value="id:644753770635"/>
+            android:value="id:1070394322763"/>
 
         <activity android:name=".ContentActivity" />
         <activity android:name=".MainActivity" />
