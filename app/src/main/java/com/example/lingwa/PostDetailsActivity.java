@@ -60,6 +60,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         postWrapper = Parcels.unwrap(getIntent().getParcelableExtra("post"));
         position = getIntent().getIntExtra("position", 0);
 
+        // Initialize views
         tvPostDetailsUsername = findViewById(R.id.tvPostDetailsUsername);
         tvPostDetailsBody = findViewById(R.id.tvPostDetailsBody);
         ivPostDetailsProfile = findViewById(R.id.ivPostDetailsProfile);

@@ -61,6 +61,7 @@ public class Post extends ParseObject {
 
     public void setNumLikes(int num) { put(KEY_NUM_LIKES, num); }
 
+    // run only in background thread
     public boolean isLikedByUser(ParseUser user) {
         ParseQuery<UserLike> likeQuery = ParseQuery.getQuery(UserLike.class);
         likeQuery.whereEqualTo(UserLike.KEY_LIKED_BY, user);

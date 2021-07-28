@@ -83,6 +83,7 @@ public class ContentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_content);
 
 
+        // Get the toolbar and hide it so that we can show the custom toolbar with a back button
         Toolbar toolbar = (Toolbar) findViewById(R.id.tbContentToolbar);
         toolbar.setNavigationIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_arrow_back_24, getTheme()));
         getSupportActionBar().hide();
@@ -97,16 +98,17 @@ public class ContentActivity extends AppCompatActivity {
         bodyMovementMethod = (LongClickLinkMovementMethod) LongClickLinkMovementMethod.getInstance();
 
         contentWrapper = Parcels.unwrap(getIntent().getParcelableExtra("content"));
+
+        // Add this article's object id to the user's list of recently read articles
         ParseUser.getCurrentUser().addUnique(KEY_RECENT_ARTICLES, contentWrapper.objectId);
         ParseUser.getCurrentUser().saveInBackground();
-        // Content content = (Content) Content.createWithoutData("content", contentWrapper.objectId);
 
-        final FragmentManager fragmentManager = getSupportFragmentManager();
-
+        // Find the bottom navigation view and make sure the forward/back buttons cannot be highlighted
         BottomNavigationView bottomNavigationView = findViewById(R.id.bnvContent);
         Menu menu = bottomNavigationView.getMenu();
         menu.setGroupCheckable(0, false, true);
 
+        // Set up forward/back buttons to change the pages
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
             @Override
@@ -134,6 +136,8 @@ public class ContentActivity extends AppCompatActivity {
 
         tvBody = findViewById(R.id.tvBody);
 
+        // When the views are constructed/visible, create the pages for the given text
+        // using the Paginator class.
         final ViewTreeObserver observer = tvBody.getViewTreeObserver();
         observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -254,6 +258,8 @@ public class ContentActivity extends AppCompatActivity {
                             return;
                         }
 
+                        // If the application is still running (must check), then show a popup Balloon
+                        // with the translation displayed, centered where the clicked word is.
                         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
                             SpannableString completeText = (SpannableString) tvBody.getText();
                             ArrowOrientation arrowOrientation = ArrowOrientation.BOTTOM;
@@ -328,6 +334,7 @@ public class ContentActivity extends AppCompatActivity {
             }
     };
 
+    // Create an (approximate) Rect around the word so we can tell where to center the popup translation Balloon
     private Rect getSpanCoordinateRect(TextView textView, ClickableSpan span) {
         Rect textViewRect = new Rect();
 

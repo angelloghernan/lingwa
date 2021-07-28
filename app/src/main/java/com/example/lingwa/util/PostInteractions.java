@@ -18,6 +18,9 @@ import com.parse.SaveCallback;
 
 import java.util.List;
 
+// Class to handle post interactions (ie: liking a post)
+// Done to reduce redundancy between timeline view and individual post view (post details)
+// In the future, this will also be helpful if I implement bookmarking and commenting/replying to posts
 public class PostInteractions {
     private static final String TAG = "PostInteractions";
     Post post;
@@ -52,7 +55,8 @@ public class PostInteractions {
 
     void unlikePost(Post likedPost) {
         ParseQuery<UserLike> likeQuery = ParseQuery.getQuery(UserLike.class);
-        // likeQuery.whereEqualTo(UserLike.KEY_LIKED_POST, ParseObject.createWithoutData(Post.class, likedPost.getObjectId()));
+        // Find the like entry (where the user liking it is this user, and the post liked is this post)
+        likeQuery.whereEqualTo(UserLike.KEY_LIKED_POST, ParseObject.createWithoutData(Post.class, likedPost.getObjectId()));
         likeQuery.whereEqualTo(UserLike.KEY_LIKED_BY, ParseUser.getCurrentUser());
 
         likeQuery.getFirstInBackground(new GetCallback<UserLike>() {

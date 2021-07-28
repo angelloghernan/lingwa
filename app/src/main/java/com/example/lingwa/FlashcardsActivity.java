@@ -2,9 +2,7 @@ package com.example.lingwa;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.transition.FragmentTransitionSupport;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,40 +10,31 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.UserManager;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.lingwa.fragments.FlashcardFragment;
 import com.example.lingwa.fragments.QuizFragment;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
 import com.example.lingwa.util.FamiliarityAlgo;
 import com.example.lingwa.util.Translator;
 import com.example.lingwa.wrappers.WordWrapper;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import org.json.JSONException;
 import org.parceler.Parcels;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import www.sanju.motiontoast.MotionToast;
 
@@ -143,7 +132,6 @@ public class FlashcardsActivity extends AppCompatActivity {
                             cannotFlip = false;
                             return;
                         }
-                        Fragment flashcardFragment = new FlashcardFragment();
                         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
                         wordList.get(wordIndex).setStruggleIndex(struggleIndex - 2);

@@ -105,6 +105,8 @@ public class MyStuffActivity extends AppCompatActivity {
         lvSavedWords.setAdapter(savedWordsAdapter);
 
 
+        // Create a list of word wrappers so we can pass it to an intent later on
+        // Todo: make the initialization process a static function in the WordWrapper class (WordWrapper.fromWord)
         for (int i = 0; i < ujwEntryList.size(); i++) {
             UserJoinWord ujwEntry = ujwEntryList.get(i);
             Word word = ujwEntry.getWord();
@@ -121,6 +123,9 @@ public class MyStuffActivity extends AppCompatActivity {
         btnPractice.setOnClickListener(startPractice);
         // btnUpload.setOnClickListener(uploadBook);
     }
+
+    // When the practice button is clicked, make sure there are words available for the user before
+    // starting an intent to sent them to the flashcards activity
     View.OnClickListener startPractice = new View.OnClickListener() {
         @Override
         public void onClick(View v) {

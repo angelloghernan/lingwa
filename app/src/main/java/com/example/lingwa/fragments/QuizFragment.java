@@ -39,6 +39,9 @@ public class QuizFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
+     * This fragment shows whenever the user is struggling
+     * with a word. This allows them to get more practice with a word
+     * ("Here's what this word means")
      *
      * @param word Untranslated word
      * @param translation Translated word
@@ -72,6 +75,7 @@ public class QuizFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Initialize views
         tvQuizWord = view.findViewById(R.id.tvQuizWord);
         tvQuizTranslation = view.findViewById(R.id.tvQuizTranslation);
         tvQuizWord.setText(mWord);

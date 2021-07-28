@@ -86,6 +86,8 @@ public class AddPostFragment extends Fragment {
 
         Context context = view.getContext();
 
+        // When submitting, clear the EditText box for the body of the post and
+        // save a new post in the server
         btnPostSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

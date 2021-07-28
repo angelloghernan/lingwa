@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.lingwa.ContentActivity;
 import com.example.lingwa.PostDetailsActivity;
@@ -70,6 +71,7 @@ public class HomeFragment extends Fragment {
 
     RecyclerView rvHomeFeed;
     ProgressBar pbPostLoading;
+    TextView tvNoPosts;
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -155,8 +157,10 @@ public class HomeFragment extends Fragment {
         postList = new ArrayList<>();
         queryForContentAndPosts();
 
-        adapter = new PostAdapter(view.getContext(), contentList, postList, callback);
+        tvNoPosts = view.findViewById(R.id.tvNoPosts);
         rvHomeFeed = view.findViewById(R.id.rvHomeFeed);
+
+        adapter = new PostAdapter(view.getContext(), contentList, postList, callback);
         rvHomeFeed.setAdapter(adapter);
         rvHomeFeed.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
@@ -166,12 +170,16 @@ public class HomeFragment extends Fragment {
             public void onTabSelected(TabLayout.Tab tab) {
                 switch (tab.getPosition()) {
                     case 1:
+                        tvNoPosts.setVisibility(View.INVISIBLE);
                         adapter.setPostsShown(false);
                         rvHomeFeed.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
                         break;
 
                     case 0:
+                        if (postList.size() == 0) {
+                            tvNoPosts.setVisibility(View.VISIBLE);
+                        }
                         adapter.setPostsShown(true);
                         rvHomeFeed.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
@@ -214,30 +222,33 @@ public class HomeFragment extends Fragment {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    contentList = contentQuery.find();
-                    postList = postQuery.find();
-                } catch (ParseException e) {
-                    Log.e(TAG, e.toString());
-                }
-
-                adapter.clearContent();
-                adapter.clearPosts();
-                adapter.addAllPosts(postList);
-                adapter.addAllContent(contentList);
-
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                        pbPostLoading.setVisibility(View.INVISIBLE);
-                        pbPostLoading.setActivated(false);
-                    }
-                });
+        executor.execute(() -> {
+            try {
+                contentList = contentQuery.find();
+                postList = postQuery.find();
+            } catch (ParseException e) {
+                Log.e(TAG, e.toString());
             }
+
+            for (int i = 0; i < postList.size(); i++) {
+                Post post = postList.get(i);
+                post.liked = post.isLikedByUser(ParseUser.getCurrentUser());
+                post.likesFetched = true;
+            }
+
+            adapter.clearContent();
+            adapter.clearPosts();
+            adapter.addAllPosts(postList);
+            adapter.addAllContent(contentList);
+
+            handler.post(() -> {
+                if (postList.size() == 0) {
+                    tvNoPosts.setVisibility(View.VISIBLE);
+                }
+                adapter.notifyDataSetChanged();
+                pbPostLoading.setVisibility(View.INVISIBLE);
+                pbPostLoading.setActivated(false);
+            });
         });
     }
 

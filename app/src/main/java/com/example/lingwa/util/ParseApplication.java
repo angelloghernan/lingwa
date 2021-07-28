@@ -3,6 +3,7 @@ package com.example.lingwa.util;
 import android.app.Application;
 
 import com.example.lingwa.BuildConfig;
+import com.example.lingwa.R;
 import com.example.lingwa.models.Comment;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.FollowEntry;
@@ -11,6 +12,7 @@ import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.UserLike;
 import com.example.lingwa.models.Word;
 import com.parse.Parse;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 
 public class ParseApplication extends Application {
@@ -36,6 +38,10 @@ public class ParseApplication extends Application {
                 .clientKey(BuildConfig.BACK4APP_CLIENT_KEY)
                 .server("https://parseapi.back4app.com/")
                 .build());
+
+        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+        installation.put("GCMSenderId", "644753770635");
+        installation.saveInBackground();
     }
 
 }

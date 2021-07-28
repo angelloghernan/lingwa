@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,6 +45,8 @@ import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -84,7 +88,8 @@ public class MyProfileFragment extends Fragment {
 
     /**
      * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * this fragment -- used for when a user profile is opened
+     * from outside of the MainActivity that is not the current user
      *
      * @param userId The id of the user to be displayed
      * @param username Username of the user
@@ -126,6 +131,7 @@ public class MyProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Initialize views
         btnRight = view.findViewById(R.id.btnLogOut);
         btnLeft = view.findViewById(R.id.btnMyStuff);
         tvProfileBio = view.findViewById(R.id.tvProfileBio);
@@ -134,7 +140,7 @@ public class MyProfileFragment extends Fragment {
         rvMyPosts = view.findViewById(R.id.rvMyPosts);
         pbProfile = view.findViewById(R.id.pbProfile);
 
-        // If there was no userId passed, we use the current user instead
+        // If there was no userId passed, we use the current user's information instead
         if (userId == null) {
             user = ParseUser.getCurrentUser();
             userId = user.getObjectId();
@@ -145,6 +151,7 @@ public class MyProfileFragment extends Fragment {
             } catch (NullPointerException e) {
                 Log.e(TAG, "error getting profile picture: " + e.toString());
             }
+            // Make sure the buttons on the left and right have the correct functionalities
             btnRight.setOnClickListener(logOut);
             btnLeft.setOnClickListener(goToMyStuff);
         } else {
@@ -162,7 +169,7 @@ public class MyProfileFragment extends Fragment {
 
         if (profilePictureUrl != null) {
             Glide.with(requireContext())
-                    .load(user.getParseFile("profilePicture").getUrl())
+                    .load(profilePictureUrl)
                     .circleCrop()
                     .into(ivProfilePicture);
         } else {
@@ -172,7 +179,7 @@ public class MyProfileFragment extends Fragment {
                     .into(ivProfilePicture);
         }
 
-
+        // Set up recyclerview and fetch posts made by this user
         postList = new ArrayList<>();
         adapter = new PostAdapter(view.getContext(), null, postList, callback);
         adapter.setPostsShown(true);
@@ -281,26 +288,40 @@ public class MyProfileFragment extends Fragment {
     }
 
     private void fetchPosts() {
-        ParseUser user = ParseUser.createWithoutData(ParseUser.class, userId);
-        ParseQuery<Post> myPostsQuery = ParseQuery.getQuery(Post.class);
-        myPostsQuery.whereEqualTo(Post.KEY_AUTHOR, user);
-        myPostsQuery.setLimit(20);
-        myPostsQuery.include(Post.KEY_AUTHOR);
-        myPostsQuery.addDescendingOrder("createdAt");
-        myPostsQuery.findInBackground(new FindCallback<Post>() {
-            @Override
-            public void done(List<Post> posts, ParseException e) {
-                if (e != null) {
-                    Log.e(TAG, "error getting user's posts: " + e.toString());
-                    return;
-                }
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
-                postList.addAll(posts);
+        executor.execute(() -> {
+            // Query for all the posts of the user we are currently viewing
+            ParseUser user = ParseUser.createWithoutData(ParseUser.class, userId);
+            ParseQuery<Post> myPostsQuery = ParseQuery.getQuery(Post.class);
+            myPostsQuery.whereEqualTo(Post.KEY_AUTHOR, user);
+            myPostsQuery.setLimit(20);
+            myPostsQuery.include(Post.KEY_AUTHOR);
+            myPostsQuery.addDescendingOrder("createdAt");
+
+            try {
+                postList = myPostsQuery.find();
+                // Check each post to see if it is liked by the current user
+                for (int i = 0; i < postList.size(); i++) {
+                    Post post = postList.get(i);
+                    post.liked = post.isLikedByUser(ParseUser.getCurrentUser());
+                    post.likesFetched = true;
+                }
+                // Clear the adapter's posts and add all the posts we have just fetched
                 adapter.clearPosts();
-                adapter.addAllPosts(posts);
+                adapter.addAllPosts(postList);
+            } catch (ParseException e) {
+                Log.e(TAG, "error getting user's posts: " + e.toString());
+            }
+
+            handler.post(() -> {
+                // Notify the adapter of the changes so that the RecyclerView can update after
+                // the posts have been fetched (handler.post)
+                // Additionally make the progressbar (pb) invisible now that the posts have loaded
                 adapter.notifyDataSetChanged();
                 pbProfile.setVisibility(View.INVISIBLE);
-            }
+            });
         });
     }
 

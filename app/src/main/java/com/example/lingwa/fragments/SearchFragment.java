@@ -66,16 +66,20 @@ public class SearchFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        // Initialize view variables
         etSearch = view.findViewById(R.id.etSearch);
         btnSearch = view.findViewById(R.id.btnSearch);
         rvSearch = view.findViewById(R.id.rvSearch);
         pbSearch = view.findViewById(R.id.pbSearch);
 
+        // Set up recyclerview
         userList = new ArrayList<>();
         adapter = new SearchAdapter(view.getContext(), userList, callback);
         rvSearch.setLayoutManager(new LinearLayoutManager(view.getContext()));
         rvSearch.setAdapter(adapter);
 
+        // When the search button is clicked, query for users with matching (beginning)
+        // of username
         btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,6 +95,7 @@ public class SearchFragment extends Fragment {
     }
 
     void queryForUser(String query) {
+        // Query for users with matching start of username as the query
         ParseQuery<ParseUser> userQuery = ParseQuery.getQuery(ParseUser.class);
         userQuery.whereStartsWith("username", query);
         userQuery.setLimit(10);
@@ -99,8 +104,11 @@ public class SearchFragment extends Fragment {
             public void done(List<ParseUser> users, ParseException e) {
                 if (e != null) {
                     Log.e(TAG, "error searching for users: " + e.toString());
+                    return;
                 }
 
+                // Make the progress bar (pb) invisible and update the adapter
+                // and RecyclerView.
                 pbSearch.setVisibility(View.INVISIBLE);
                 userList = users;
                 adapter.clear();

@@ -49,6 +49,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
     @Override
     public PostAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
+        // Make sure the view holder uses the proper layout based on if we are showing content (articles) or
+        // posts from users
         if (!postsShown) {
              view = LayoutInflater.from(context).inflate(R.layout.item_content, parent, false);
         } else {

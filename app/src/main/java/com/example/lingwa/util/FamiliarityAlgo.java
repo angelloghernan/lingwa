@@ -135,7 +135,7 @@ public class FamiliarityAlgo {
 }
 
 class SortByPriority implements Comparator<WordWrapper> {
-    public static final String BY_ALGORITHM = "algorithm";
+    // public static final String BY_ALGORITHM = "algorithm";
     public static final String BY_USER = "user";
     public static final String BY_NOBODY = "unsaved";
     public static final int MAX_FAMILIARITY = 5;
