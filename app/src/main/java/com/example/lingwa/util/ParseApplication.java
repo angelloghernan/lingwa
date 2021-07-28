@@ -3,8 +3,6 @@ package com.example.lingwa.util;
 import android.app.Application;
 
 import com.example.lingwa.BuildConfig;
-import com.example.lingwa.R;
-import com.example.lingwa.models.Comment;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;

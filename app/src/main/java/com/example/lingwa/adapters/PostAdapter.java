@@ -101,6 +101,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
         posts.addAll(list);
     }
 
+    public void addContent(int position, Content content) {contentPosts.add(position, content);}
+
+    public void addPost(int position, Post post) {posts.add(position, post);}
+
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView ivContentImage;

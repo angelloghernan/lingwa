@@ -2,11 +2,15 @@ package com.example.lingwa;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,19 +20,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.lingwa.models.Comment;
+import com.example.lingwa.adapters.PostAdapter;
+import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Post;
+import com.example.lingwa.util.ParseApplication;
 import com.example.lingwa.util.PostInteractions;
 import com.example.lingwa.wrappers.PostWrapper;
-import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import org.parceler.Parcels;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import www.sanju.motiontoast.MotionToast;
 
@@ -40,6 +50,11 @@ public class PostDetailsActivity extends AppCompatActivity {
     Context context;
     PostWrapper postWrapper;
     Post post;
+
+    List<Post> commentList;
+    PostAdapter adapter;
+
+    RecyclerView rvComments;
     TextView tvPostDetailsUsername;
     TextView tvPostDetailsBody;
     TextView tvPostDetailsTimestamp;
@@ -61,6 +76,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         position = getIntent().getIntExtra("position", 0);
 
         // Initialize views
+        rvComments = findViewById(R.id.rvComments);
         tvPostDetailsUsername = findViewById(R.id.tvPostDetailsUsername);
         tvPostDetailsBody = findViewById(R.id.tvPostDetailsBody);
         ivPostDetailsProfile = findViewById(R.id.ivPostDetailsProfile);
@@ -120,34 +136,14 @@ public class PostDetailsActivity extends AppCompatActivity {
                     .into(ivPDCurrentUserProfile);
         }
 
-        btnSubmitComment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String body = etCommentBody.getText().toString();
-                if (body.equals("")) {
-                    return;
-                }
-                Post comment = new Post(body, ParseUser.getCurrentUser(), post, 0 , 0);
-                comment.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e != null) {
-                            Log.e(TAG, "error posting comment: " + e.toString());
-                            return;
-                        }
-                        etCommentBody.setText("");
-                        MotionToast.Companion.createColorToast((Activity) context,
-                                "Success",
-                                "Comment posted!",
-                                MotionToast.TOAST_SUCCESS,
-                                MotionToast.GRAVITY_BOTTOM,
-                                MotionToast.SHORT_DURATION,
-                                ResourcesCompat.getFont(context, R.font.helvetica_regular));
-                    }
-                });
-            }
-        });
+        // Set up recycler view, fetch comments to populate recycler view
+        commentList = new ArrayList<>();
+        adapter = new PostAdapter(context, null, commentList, callback);
+        rvComments.setAdapter(adapter);
+        rvComments.setLayoutManager(new LinearLayoutManager(context));
+        fetchComments();
 
+        btnSubmitComment.setOnClickListener(makeComment);
     }
 
     @Override
@@ -159,4 +155,73 @@ public class PostDetailsActivity extends AppCompatActivity {
         setResult(RESULT_OK, intent);
         finish();
     }
+
+    private void fetchComments() {
+        ParseQuery<Post> commentQuery = ParseQuery.getQuery(Post.class);
+        commentQuery.include(Post.KEY_AUTHOR);
+        commentQuery.addDescendingOrder(Post.KEY_CREATED_AT);
+        commentQuery.whereEqualTo(Post.KEY_REPLYING_TO,
+                ParseObject.createWithoutData(Post.class, postWrapper.objectId));
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            try {
+                commentList = commentQuery.find();
+                adapter.clearPosts();
+                adapter.addAllPosts(commentList);
+            } catch (ParseException e) {
+                Log.e(TAG, "error fetching comments: " + e.toString());
+                return;
+            }
+
+            handler.post(() -> {
+                adapter.notifyDataSetChanged();
+            });
+
+        });
+    }
+
+    View.OnClickListener makeComment = v -> {
+        String body = etCommentBody.getText().toString();
+        if (body.equals("")) {
+            return;
+        }
+        Post comment = new Post(body, ParseUser.getCurrentUser(), post, 0 , 0);
+        comment.saveInBackground(e -> {
+            if (e != null) {
+                Log.e(TAG, "error posting comment: " + e.toString());
+                return;
+            }
+            etCommentBody.setText("");
+            post.setNumComments(post.getNumComments() + 1);
+
+            ParseApplication.createPushNotification(
+                    ParseUser.getCurrentUser().getUsername() + " commented on your post",
+                    "New Comment",
+                    post.getAuthor());
+
+            MotionToast.Companion.createColorToast((Activity) context,
+                    "Success",
+                    "Comment posted!",
+                    MotionToast.TOAST_SUCCESS,
+                    MotionToast.GRAVITY_BOTTOM,
+                    MotionToast.SHORT_DURATION,
+                    ResourcesCompat.getFont(context, R.font.helvetica_regular));
+
+            commentList.add(0, comment);
+            adapter.addPost(0, comment);
+            adapter.notifyItemInserted(0);
+            rvComments.scrollToPosition(0);
+        });
+    };
+
+    // currently unused
+    PostAdapter.AdapterCallback callback = new PostAdapter.AdapterCallback() {
+        @Override
+        public void onContentSelected(int position, Content content) { }
+        @Override
+        public void onPostSelected(int position, Post post) { }
+    };
 }
