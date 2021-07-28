@@ -127,7 +127,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                 if (body.equals("")) {
                     return;
                 }
-                Comment comment = new Comment(ParseUser.getCurrentUser(), post);
+                Post comment = new Post(body, ParseUser.getCurrentUser(), post, 0 , 0);
                 comment.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {

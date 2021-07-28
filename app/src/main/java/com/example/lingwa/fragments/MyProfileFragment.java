@@ -302,6 +302,7 @@ public class MyProfileFragment extends Fragment {
             ParseUser user = ParseUser.createWithoutData(ParseUser.class, userId);
             ParseQuery<Post> myPostsQuery = ParseQuery.getQuery(Post.class);
             myPostsQuery.whereEqualTo(Post.KEY_AUTHOR, user);
+            myPostsQuery.whereDoesNotExist(Post.KEY_REPLYING_TO);
             myPostsQuery.setLimit(20);
             myPostsQuery.include(Post.KEY_AUTHOR);
             myPostsQuery.addDescendingOrder("createdAt");

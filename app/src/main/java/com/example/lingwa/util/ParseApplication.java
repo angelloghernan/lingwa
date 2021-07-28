@@ -36,7 +36,6 @@ public class ParseApplication extends Application {
         ParseObject.registerSubclass(Word.class);
         ParseObject.registerSubclass(Post.class);
         ParseObject.registerSubclass(UserLike.class);
-        ParseObject.registerSubclass(Comment.class);
         ParseObject.registerSubclass(FollowEntry.class);
 
         Parse.initialize(new Parse.Configuration.Builder(this)

@@ -208,7 +208,7 @@ public class HomeFragment extends Fragment {
         pbPostLoading.setActivated(true);
         ParseQuery<Content> contentQuery = ParseQuery.getQuery(Content.class);
         contentQuery.setLimit(10);
-        contentQuery.addDescendingOrder("createdAt");
+        contentQuery.addDescendingOrder(ParseObject.KEY_CREATED_AT);
 
         ParseQuery<FollowEntry> innerFollowQuery = ParseQuery.getQuery(FollowEntry.class);
         innerFollowQuery.whereEqualTo(FollowEntry.KEY_FOLLOWER, ParseUser.getCurrentUser());
@@ -217,7 +217,8 @@ public class HomeFragment extends Fragment {
         postQuery.setLimit(10);
         postQuery.include(Post.KEY_AUTHOR);
         postQuery.whereMatchesKeyInQuery(Post.KEY_AUTHOR, FollowEntry.KEY_FOLLOWED, innerFollowQuery);
-        postQuery.addDescendingOrder("createdAt");
+        postQuery.whereDoesNotExist(Post.KEY_REPLYING_TO);
+        postQuery.addDescendingOrder(ParseObject.KEY_CREATED_AT);
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());

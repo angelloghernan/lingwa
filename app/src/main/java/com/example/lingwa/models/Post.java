@@ -19,6 +19,7 @@ public class Post extends ParseObject {
     public static final String KEY_AUTHOR = "author";
     public static final String KEY_NUM_COMMENTS = "numComments";
     public static final String KEY_NUM_LIKES = "numLikes";
+    public static final String KEY_REPLYING_TO = "replyingTo";
 
     public boolean liked = false;
     public boolean likesFetched = false;
@@ -33,10 +34,15 @@ public class Post extends ParseObject {
     }
 
     public Post(String body, ParseUser user, int numLikes, int numComments) {
+        this(body, user, null, numLikes, numComments);
+    }
+
+    public Post (String body, ParseUser user, Post replyingTo, int numLikes, int numComments) {
         setBody(body);
         setAuthor(user);
         setNumLikes(numLikes);
         setNumComments(numComments);
+        setReplyingTo(replyingTo);
     }
 
     public void updateFromWrapper(PostWrapper postWrapper) {
@@ -60,6 +66,16 @@ public class Post extends ParseObject {
     public int getNumLikes() { return getInt(KEY_NUM_LIKES); }
 
     public void setNumLikes(int num) { put(KEY_NUM_LIKES, num); }
+
+    public Post getReplyingTo() {
+        Object replyingTo = get(KEY_REPLYING_TO);
+        if (!(replyingTo instanceof Post)) {
+            return null;
+        }
+        return (Post) replyingTo;
+    }
+
+    public void setReplyingTo(Post replyingTo) { put(KEY_REPLYING_TO, replyingTo); }
 
     // run only in background thread
     public boolean isLikedByUser(ParseUser user) {
