@@ -139,6 +139,11 @@ public class ContentActivity extends AppCompatActivity {
                             currentPage--;
                             break;
                         }
+                        if (readerIndex > 0) {
+                            paginator.changeSection(--readerIndex);
+                            currentPage = paginator.size() - 1;
+                        }
+
                         return false;
                     case R.id.action_next_page:
                         if (currentPage < paginator.size() - 1) {
