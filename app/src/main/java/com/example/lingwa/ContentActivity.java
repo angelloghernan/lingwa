@@ -38,6 +38,10 @@ import com.example.lingwa.util.LongClickLinkMovementMethod;
 import com.example.lingwa.util.LongClickableSpan;
 import com.example.lingwa.util.Paginator;
 import com.example.lingwa.util.Translator;
+import com.example.lingwa.util.epubparser.BookSection;
+import com.example.lingwa.util.epubparser.Reader;
+import com.example.lingwa.util.epubparser.exception.OutOfPagesException;
+import com.example.lingwa.util.epubparser.exception.ReadingException;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -75,7 +79,9 @@ public class ContentActivity extends AppCompatActivity {
     Paginator paginator;
     LongClickLinkMovementMethod bodyMovementMethod;
     Button btnTest;
+    Reader reader;
     int currentPage = 0;
+    boolean isEpub = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +104,18 @@ public class ContentActivity extends AppCompatActivity {
         bodyMovementMethod = (LongClickLinkMovementMethod) LongClickLinkMovementMethod.getInstance();
 
         contentWrapper = Parcels.unwrap(getIntent().getParcelableExtra("content"));
+
+        if (contentWrapper.epubPath != null) {
+            isEpub = true;
+            reader = new Reader();
+            reader.setIsIncludingTextContent(true);
+            reader.setMaxContentPerSection(10000);
+            try {
+                reader.setFullContent(contentWrapper.epubPath);
+            } catch (ReadingException e) {
+                Log.e(TAG, "error reading epub file: " + e.toString());
+            }
+        }
 
         // Add this article's object id to the user's list of recently read articles
         ParseUser.getCurrentUser().addUnique(KEY_RECENT_ARTICLES, contentWrapper.objectId);
@@ -142,7 +160,19 @@ public class ContentActivity extends AppCompatActivity {
         observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                paginator = new Paginator(contentWrapper.body,
+                String text = "";
+                if (contentWrapper.epubPath != null) {
+                    try {
+                        BookSection section = reader.readSection(1);
+                        text = section.getSectionTextContent();
+                    } catch (ReadingException | OutOfPagesException e) {
+                        Log.e(TAG, "error reading epub: " + e.toString());
+                    }
+                } else {
+                    text = contentWrapper.body;
+                }
+                text = text.trim();
+                paginator = new Paginator(text,
                         tvBody.getWidth(),
                         tvBody.getHeight(),
                         tvBody.getPaint(),
@@ -334,7 +364,8 @@ public class ContentActivity extends AppCompatActivity {
             }
     };
 
-    // Create an (approximate) Rect around the word so we can tell where to center the popup translation Balloon
+    // Create an (approximate) Rect around the word's line so we can tell where to center the popup translation Balloon
+    // Used currently just to get the y-value (rectangle is created around line)
     private Rect getSpanCoordinateRect(TextView textView, ClickableSpan span) {
         Rect textViewRect = new Rect();
 

@@ -66,6 +66,8 @@ public class Paginator {
         pages.add(text);
     }
 
+    private void removePage(int position) { pages.remove(position); }
+
     public int size() {
         return pages.size();
     }

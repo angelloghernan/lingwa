@@ -1,7 +1,5 @@
 package com.example.lingwa;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,42 +18,28 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
+import com.example.lingwa.models.Content;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
+import com.example.lingwa.util.FileUtils;
+import com.example.lingwa.util.epubparser.BookSection;
+import com.example.lingwa.util.epubparser.Reader;
+import com.example.lingwa.util.epubparser.exception.OutOfPagesException;
+import com.example.lingwa.util.epubparser.exception.ReadingException;
+import com.example.lingwa.wrappers.ContentWrapper;
 import com.example.lingwa.wrappers.WordWrapper;
-import com.github.mertakdut.BookSection;
-import com.github.mertakdut.Reader;
-import com.github.mertakdut.exception.OutOfPagesException;
-import com.github.mertakdut.exception.ReadingException;
-import com.google.gson.JsonArray;
 import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.parceler.Parcels;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.zip.ZipFile;
 
-import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.domain.Resource;
-import nl.siegmann.epublib.domain.TOCReference;
-import nl.siegmann.epublib.domain.TableOfContents;
-import nl.siegmann.epublib.epub.BookProcessor;
-import nl.siegmann.epublib.epub.EpubReader;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 import www.sanju.motiontoast.MotionToast;
@@ -184,16 +168,15 @@ public class MyStuffActivity extends AppCompatActivity {
             wordList = Parcels.unwrap(data.getParcelableExtra("wordList"));
         } else if (requestCode == UPLOAD_REQUEST_CODE) {
             ContentResolver resolver = context.getContentResolver();
+
             Uri uri = data.getData();
-            File epub = new File(uri.getPath());
-            try {
-                InputStream inputStream = resolver.openInputStream(uri);
-                Book book = (new EpubReader()).readEpub(inputStream);
-                Log.i(TAG, book.getTitle());
-                List<Resource> resources = book.getContents();
-            } catch (IOException e) {
-                Log.e(TAG, "Error opening epub: " + e.toString());
-            }
+            FileUtils fileUtils = new FileUtils();
+            String path = fileUtils.getPath(this, uri);
+            Intent intent = new Intent(this, ContentActivity.class);
+            ContentWrapper contentWrapper = new ContentWrapper();
+            contentWrapper.epubPath = path;
+            intent.putExtra("content", Parcels.wrap(contentWrapper));
+            startActivity(intent);
         }
     }
 
@@ -209,11 +192,10 @@ public class MyStuffActivity extends AppCompatActivity {
     private void methodRequiresPermission() {
         String[] perms = {Manifest.permission.READ_EXTERNAL_STORAGE};
         if (EasyPermissions.hasPermissions(this, perms)) {
-            // wait
-        } else {
-            // Do not have permissions, request them now
-            EasyPermissions.requestPermissions(this, "Lingwa needs to read external storage to upload epub books.",
-                    1, perms);
+            return;
         }
+        // Do not have permissions, request them now
+        EasyPermissions.requestPermissions(this, "Lingwa needs to read external storage to upload epub books.",
+                1, perms);
     }
 }

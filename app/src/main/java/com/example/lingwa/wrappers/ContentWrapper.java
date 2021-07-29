@@ -15,6 +15,8 @@ public class ContentWrapper {
     public String thumbnailUrl = null;
     public String contentType;
     public String objectId;
+    public String epubPath = null;
+
 
     public ContentWrapper() {
         // required empty default constructor for Parcel
