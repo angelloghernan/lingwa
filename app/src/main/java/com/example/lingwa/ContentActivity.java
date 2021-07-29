@@ -82,6 +82,7 @@ public class ContentActivity extends AppCompatActivity {
     Button btnTest;
     Reader reader;
     int currentPage = 0;
+    int readerIndex = 1;
     boolean isEpub = false;
 
     @Override
@@ -144,7 +145,9 @@ public class ContentActivity extends AppCompatActivity {
                             currentPage++;
                             break;
                         }
-                        return false;
+                        paginator.changeSection(++readerIndex);
+                        currentPage = 0;
+                        break;
                     default:
                         return false;
                 }
@@ -164,7 +167,7 @@ public class ContentActivity extends AppCompatActivity {
                 String text = "";
                 if (isEpub) {
                     try {
-                        BookSection section = reader.readSection(4);
+                        BookSection section = reader.readSection(1);
                         text = section.getSectionTextContent();
                     } catch (ReadingException | OutOfPagesException e) {
                         Log.e(TAG, "error reading epub: " + e.toString());
@@ -178,7 +181,8 @@ public class ContentActivity extends AppCompatActivity {
                         tvBody.getPaint(),
                         tvBody.getLineSpacingMultiplier(),
                         tvBody.getLineSpacingExtra(),
-                        tvBody.getIncludeFontPadding());
+                        tvBody.getIncludeFontPadding(),
+                        reader);
 
                 makeTextClickable(paginator.get(0).toString());
                 tvBody.getViewTreeObserver().removeOnGlobalLayoutListener(this);

@@ -4,6 +4,13 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 
+import androidx.annotation.Nullable;
+
+import com.example.lingwa.util.epubparser.BookSection;
+import com.example.lingwa.util.epubparser.Reader;
+import com.example.lingwa.util.epubparser.exception.OutOfPagesException;
+import com.example.lingwa.util.epubparser.exception.ReadingException;
+
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +23,13 @@ public class Paginator {
     private final int height;
     private final float spacingMultiplier;
     private final float spacingAdded;
-    private final CharSequence text;
+    private final Reader reader;
+    private CharSequence text;
     private final TextPaint paint;
     private final List<CharSequence> pages;
 
     public Paginator(CharSequence text, int pageWidth, int pageHeight, TextPaint paint,
-                     float spacingMultiplier, float spacingAdded, boolean includePadding) {
+                     float spacingMultiplier, float spacingAdded, boolean includePadding, @Nullable Reader reader) {
 
         this.includePad = includePadding;
         this.width = pageWidth;
@@ -31,6 +39,7 @@ public class Paginator {
         this.text = text;
         this.paint = paint;
         this.pages = new ArrayList<>();
+        this.reader = reader;
 
         paginateText();
     }
@@ -78,5 +87,20 @@ public class Paginator {
         } else {
             return null;
         }
+    }
+
+    public void changeSection(int index) {
+        if (reader == null) {
+            return;
+        }
+        pages.clear();
+        try {
+            BookSection section = reader.readSection(index);
+            text = section.getSectionTextContent();
+        } catch (ReadingException | OutOfPagesException e) {
+            e.printStackTrace();
+        }
+        paginateText();
+
     }
 }
