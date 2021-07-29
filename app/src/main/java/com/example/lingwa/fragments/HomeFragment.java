@@ -208,6 +208,7 @@ public class HomeFragment extends Fragment {
         pbPostLoading.setActivated(true);
         ParseQuery<Content> contentQuery = ParseQuery.getQuery(Content.class);
         contentQuery.setLimit(10);
+        contentQuery.whereEqualTo(Content.KEY_TYPE, Content.TYPE_ARTICLE);
         contentQuery.addDescendingOrder(ParseObject.KEY_CREATED_AT);
 
         ParseQuery<FollowEntry> innerFollowQuery = ParseQuery.getQuery(FollowEntry.class);

@@ -77,7 +77,6 @@ class Content {
 	}
 
 	com.example.lingwa.util.epubparser.BookSection maintainBookSections(int index) throws ReadingException, OutOfPagesException {
-
 		if (peakPage == index) { // Moving in order.
 			peakPage++;
 		} else {
@@ -1536,7 +1535,7 @@ class Content {
 		htmlBody = htmlBody.substring(trimStartPosition, trimEndPosition);
 
 		for (String stringToRemove : stringsToRemove) {
-			htmlBody = htmlBody.replace(stringToRemove, "");
+			htmlBody = htmlBody.replace(stringToRemove, "\n");
 		}
 
 		return htmlBody;

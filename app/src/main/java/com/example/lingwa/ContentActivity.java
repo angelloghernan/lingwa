@@ -39,6 +39,7 @@ import com.example.lingwa.util.LongClickableSpan;
 import com.example.lingwa.util.Paginator;
 import com.example.lingwa.util.Translator;
 import com.example.lingwa.util.epubparser.BookSection;
+import com.example.lingwa.util.epubparser.NavPoint;
 import com.example.lingwa.util.epubparser.Reader;
 import com.example.lingwa.util.epubparser.exception.OutOfPagesException;
 import com.example.lingwa.util.epubparser.exception.ReadingException;
@@ -109,7 +110,7 @@ public class ContentActivity extends AppCompatActivity {
             isEpub = true;
             reader = new Reader();
             reader.setIsIncludingTextContent(true);
-            reader.setMaxContentPerSection(10000);
+            reader.setMaxContentPerSection(1000000);
             try {
                 reader.setFullContent(contentWrapper.epubPath);
             } catch (ReadingException e) {
@@ -161,9 +162,9 @@ public class ContentActivity extends AppCompatActivity {
             @Override
             public void onGlobalLayout() {
                 String text = "";
-                if (contentWrapper.epubPath != null) {
+                if (isEpub) {
                     try {
-                        BookSection section = reader.readSection(1);
+                        BookSection section = reader.readSection(4);
                         text = section.getSectionTextContent();
                     } catch (ReadingException | OutOfPagesException e) {
                         Log.e(TAG, "error reading epub: " + e.toString());
@@ -171,7 +172,6 @@ public class ContentActivity extends AppCompatActivity {
                 } else {
                     text = contentWrapper.body;
                 }
-                text = text.trim();
                 paginator = new Paginator(text,
                         tvBody.getWidth(),
                         tvBody.getHeight(),

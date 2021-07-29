@@ -30,12 +30,15 @@ import com.example.lingwa.util.epubparser.exception.ReadingException;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.example.lingwa.wrappers.WordWrapper;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.jetbrains.annotations.NotNull;
 import org.parceler.Parcels;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -172,11 +175,36 @@ public class MyStuffActivity extends AppCompatActivity {
             Uri uri = data.getData();
             FileUtils fileUtils = new FileUtils();
             String path = fileUtils.getPath(this, uri);
-            Intent intent = new Intent(this, ContentActivity.class);
-            ContentWrapper contentWrapper = new ContentWrapper();
-            contentWrapper.epubPath = path;
-            intent.putExtra("content", Parcels.wrap(contentWrapper));
-            startActivity(intent);
+
+            ParseFile epubFile = new ParseFile(new File(path));
+            pbStuffLoading.setVisibility(View.VISIBLE);
+            Content bookContent = new Content();
+            bookContent.setAttachment(epubFile);
+            bookContent.setUploader(ParseUser.getCurrentUser());
+            bookContent.setContentType(Content.TYPE_BOOK);
+            bookContent.setTitle("Test");
+            bookContent.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if (e != null) {
+                        Log.e(TAG, "error saving epub: " + e.toString());
+                        return;
+                    }
+                    Intent intent = new Intent(context, ContentActivity.class);
+                    ContentWrapper contentWrapper = new ContentWrapper();
+                    contentWrapper.epubPath = path;
+                    contentWrapper.contentType = Content.TYPE_BOOK;
+                    contentWrapper.objectId = bookContent.getObjectId();
+                    contentWrapper.attachmentUrl = null;
+                    contentWrapper.title = bookContent.getTitle();
+
+                    intent.putExtra("content", Parcels.wrap(contentWrapper));
+
+                    pbStuffLoading.setVisibility(View.INVISIBLE);
+
+                    startActivity(intent);
+                }
+            });
         }
     }
 
