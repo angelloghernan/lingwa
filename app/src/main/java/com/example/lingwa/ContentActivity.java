@@ -140,7 +140,8 @@ public class ContentActivity extends AppCompatActivity {
                             break;
                         }
                         if (readerIndex > 0) {
-                            paginator.changeSection(--readerIndex);
+                            readerIndex--;
+                            paginator.changeSection(readerIndex);
                             currentPage = paginator.size() - 1;
                         }
 
@@ -150,7 +151,8 @@ public class ContentActivity extends AppCompatActivity {
                             currentPage++;
                             break;
                         }
-                        paginator.changeSection(++readerIndex);
+                        readerIndex++;
+                        paginator.changeSection(readerIndex);
                         currentPage = 0;
                         break;
                     default:
@@ -172,7 +174,7 @@ public class ContentActivity extends AppCompatActivity {
                 String text = "";
                 if (isEpub) {
                     try {
-                        BookSection section = reader.readSection(1);
+                        BookSection section = reader.readSection(readerIndex);
                         text = section.getSectionTextContent();
                     } catch (ReadingException | OutOfPagesException e) {
                         Log.e(TAG, "error reading epub: " + e.toString());

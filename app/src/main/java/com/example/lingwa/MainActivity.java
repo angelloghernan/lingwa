@@ -6,6 +6,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.example.lingwa.fragments.AddPostFragment;
@@ -14,13 +17,64 @@ import com.example.lingwa.fragments.MyProfileFragment;
 import com.example.lingwa.fragments.SearchFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.parse.Parse;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+import com.parse.livequery.ParseLiveQueryClient;
+import com.parse.livequery.SubscriptionHandling;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.Executor;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Back4App's Parse setup
+        Parse.initialize(new Parse.Configuration.Builder(this)
+                .applicationId(BuildConfig.BACK4APP_APP_ID)
+                .clientKey(BuildConfig.BACK4APP_CLIENT_KEY)
+                .server("wss://lingwa.b4a.io/").build()
+        );
+        // Init Live Query Client
+        ParseLiveQueryClient parseLiveQueryClient = null;
+
+        try {
+            parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI("wss://lingwa.b4a.io/"));
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "Issue creating web socket for Parse server: " + e.toString());
+        }
+
+        if (parseLiveQueryClient != null) {
+            ParseQuery<ParseObject> challengeQuery = new ParseQuery<>("Challenge");
+            challengeQuery.whereEqualTo("challenged", ParseUser.getCurrentUser());
+            SubscriptionHandling<ParseObject> subscriptionHandling = parseLiveQueryClient.subscribe(challengeQuery);
+
+            subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, object) -> {
+               // Run code here when a challenge is started
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> {
+                    // Run UI updates here
+                });
+            });
+
+            subscriptionHandling.handleEvent(SubscriptionHandling.Event.UPDATE, (query, object) -> {
+               // Run code here when a challenge entry is updated
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> {
+                    // Run UI updates here
+                })
+;
+            });
+        }
+
 
         final FragmentManager fragmentManager = getSupportFragmentManager();
 
