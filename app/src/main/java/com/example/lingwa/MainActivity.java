@@ -1,10 +1,13 @@
 package com.example.lingwa;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -54,24 +57,33 @@ public class MainActivity extends AppCompatActivity {
 
         if (parseLiveQueryClient != null) {
             ParseQuery<ParseObject> challengeQuery = new ParseQuery<>("Challenge");
+            challengeQuery.include("challenger");
             challengeQuery.whereEqualTo("challenged", ParseUser.getCurrentUser());
             SubscriptionHandling<ParseObject> subscriptionHandling = parseLiveQueryClient.subscribe(challengeQuery);
 
-            subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, object) -> {
+            subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, challenge) -> {
                // Run code here when a challenge is started
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(() -> {
-                    // Run UI updates here
-                });
-            });
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-            subscriptionHandling.handleEvent(SubscriptionHandling.Event.UPDATE, (query, object) -> {
-               // Run code here when a challenge entry is updated
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(() -> {
-                    // Run UI updates here
-                })
-;
+                    builder.setMessage("New challenge from user")
+                            .setTitle("Incoming Challenge");
+
+                    builder.setPositiveButton("Accept", (dialog, which) -> {
+                        Intent intent = new Intent(this, ChallengeActivity.class);
+                        intent.putExtra("initiatedChallenge", false);
+                        intent.putExtra("challengeId", challenge.getObjectId());
+                        startActivity(intent);
+                    });
+
+                    builder.setNegativeButton("Decline", (dialog, which) -> {
+                        challenge.deleteInBackground();
+                    });
+
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                });
             });
         }
 

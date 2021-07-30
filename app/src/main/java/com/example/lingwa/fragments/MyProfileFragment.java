@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.lingwa.ChallengeActivity;
 import com.example.lingwa.LoginActivity;
 import com.example.lingwa.MyStuffActivity;
 import com.example.lingwa.PostDetailsActivity;
@@ -31,6 +33,8 @@ import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;
+import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.models.Word;
 import com.example.lingwa.util.ParseApplication;
 import com.example.lingwa.wrappers.PostWrapper;
 import com.parse.FindCallback;
@@ -49,8 +53,11 @@ import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import www.sanju.motiontoast.MotionToast;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -160,8 +167,9 @@ public class MyProfileFragment extends Fragment {
             btnLeft.setOnClickListener(goToMyStuff);
         } else {
             user = ParseObject.createWithoutData(ParseUser.class, userId);
-            btnRight.setText("Message");
+            btnRight.setText("Challenge");
             btnRight.setTextColor(getResources().getColor(R.color.info_color));
+            btnRight.setOnClickListener(challengeUser);
             btnLeft.setText("");
             // check if the currently logged in user follows the user they are viewing
             checkFollowStatus(ParseUser.getCurrentUser(), user);
@@ -232,21 +240,95 @@ public class MyProfileFragment extends Fragment {
         }
     };
 
-    View.OnClickListener logOut = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            ParseUser.logOut();
-            Intent i = new Intent(v.getContext(), LoginActivity.class);
-            startActivity(i);
-        }
+    View.OnClickListener challengeUser = v -> {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+
+            ParseObject challenge = new ParseObject("Challenge");
+            challenge.put("challenger", ParseUser.getCurrentUser());
+            ParseUser userPointer = ParseObject.createWithoutData(ParseUser.class, user.getObjectId());
+            challenge.put("challenged", userPointer);
+
+            // get the 10 most challenging words from each person's saved word list
+            // "challenging" currently based solely on their familiarity score, this
+            // can be changed later to use the same metrics as the practice algorithm
+            ParseQuery<UserJoinWord> challengerUJWQuery = ParseQuery.getQuery(UserJoinWord.class);
+            challengerUJWQuery.setLimit(10);
+            challengerUJWQuery.addAscendingOrder(UserJoinWord.KEY_FAMILIARITY_SCORE);
+            challengerUJWQuery.include(UserJoinWord.KEY_WORD);
+            challengerUJWQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
+
+            ParseQuery<UserJoinWord> challengedUJWQuery = ParseQuery.getQuery(UserJoinWord.class);
+            challengedUJWQuery.setLimit(10);
+            challengedUJWQuery.include(UserJoinWord.KEY_WORD);
+            challengedUJWQuery.addAscendingOrder(UserJoinWord.KEY_FAMILIARITY_SCORE);
+            challengedUJWQuery.whereEqualTo(UserJoinWord.KEY_USER, userPointer);
+
+
+            try {
+                List<UserJoinWord> challengerUJWEntries = challengerUJWQuery.find();
+                List<UserJoinWord> challengedUJWEntries = challengedUJWQuery.find();
+
+                if (challengerUJWEntries.size() != 10 ||
+                    challengedUJWEntries.size() != 10) {
+                    MotionToast.Companion.createColorToast((Activity) getContext(),
+                            "Info",
+                            "You and the other user need at least 10 words saved to challenge each other",
+                            MotionToast.TOAST_WARNING,
+                            MotionToast.GRAVITY_BOTTOM,
+                            MotionToast.SHORT_DURATION,
+                            ResourcesCompat.getFont(getContext(), R.font.helvetica_regular));
+                    return;
+                }
+
+                // Now, challenged words are words for the challenged user,
+                // and challenger words are words for the challenge initiater
+                // Each list of words comes from the opposites' word list
+                List<String> challengedWords = new ArrayList<>();
+                List<String> challengerWords = new ArrayList<>();
+
+                for (int i = 0; i < 10; i++) {
+                    challengedWords.add(challengerUJWEntries.get(i).getWord().getOriginalWord());
+                    challengerWords.add(challengedUJWEntries.get(i).getWord().getOriginalWord());
+                }
+
+                challenge.addAll("challengerWords", challengerWords);
+                challenge.addAll("challengedWords", challengedWords);
+                challenge.save();
+
+            } catch (ParseException e) {
+                Log.e(TAG, "Error challenging user: " + e.toString());
+                MotionToast.Companion.createColorToast((Activity) getContext(),
+                        "Error",
+                        "Error challenging user!",
+                        MotionToast.TOAST_ERROR,
+                        MotionToast.GRAVITY_BOTTOM,
+                        MotionToast.SHORT_DURATION,
+                        ResourcesCompat.getFont(getContext(), R.font.helvetica_regular));
+                        return;
+            }
+
+            handler.post(() -> {
+                Intent intent = new Intent(getContext(), ChallengeActivity.class);
+                intent.putExtra("initiatedChallenge", true);
+                intent.putExtra("challengeId", challenge.getObjectId());
+                Log.i(TAG, challenge.getObjectId());
+                startActivity(intent);
+            });
+        });
     };
 
-    View.OnClickListener goToMyStuff = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Intent i = new Intent(v.getContext(), MyStuffActivity.class);
-            startActivity(i);
-        }
+    View.OnClickListener logOut = v -> {
+        ParseUser.logOut();
+        Intent i = new Intent(v.getContext(), LoginActivity.class);
+        startActivity(i);
+    };
+
+    View.OnClickListener goToMyStuff = v -> {
+        Intent i = new Intent(v.getContext(), MyStuffActivity.class);
+        startActivity(i);
     };
 
     PostAdapter.AdapterCallback callback = new PostAdapter.AdapterCallback() {

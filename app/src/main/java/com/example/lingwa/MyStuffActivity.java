@@ -183,31 +183,29 @@ public class MyStuffActivity extends AppCompatActivity {
             bookContent.setUploader(ParseUser.getCurrentUser());
             bookContent.setContentType(Content.TYPE_BOOK);
             bookContent.setTitle("Test");
-            bookContent.saveInBackground(new SaveCallback() {
-                @Override
-                public void done(ParseException e) {
-                    if (e != null) {
-                        Log.e(TAG, "error saving epub: " + e.toString());
-                        return;
-                    }
-                    Intent intent = new Intent(context, ContentActivity.class);
-                    ContentWrapper contentWrapper = new ContentWrapper();
-                    contentWrapper.epubPath = path;
-                    contentWrapper.contentType = Content.TYPE_BOOK;
-                    contentWrapper.objectId = bookContent.getObjectId();
-                    contentWrapper.attachmentUrl = null;
-                    contentWrapper.title = bookContent.getTitle();
-
-                    intent.putExtra("content", Parcels.wrap(contentWrapper));
-
-                    pbStuffLoading.setVisibility(View.INVISIBLE);
-
-                    startActivity(intent);
+            bookContent.saveInBackground(e -> {
+                if (e != null) {
+                    Log.e(TAG, "error saving epub: " + e.toString());
+                    return;
                 }
+                Intent intent = new Intent(context, ContentActivity.class);
+                ContentWrapper contentWrapper = new ContentWrapper();
+                contentWrapper.epubPath = path;
+                contentWrapper.contentType = Content.TYPE_BOOK;
+                contentWrapper.objectId = bookContent.getObjectId();
+                contentWrapper.attachmentUrl = null;
+                contentWrapper.title = bookContent.getTitle();
+
+                intent.putExtra("content", Parcels.wrap(contentWrapper));
+
+                pbStuffLoading.setVisibility(View.INVISIBLE);
+
+                startActivity(intent);
             });
         }
     }
 
+    // permissions currently incomplete but working for purposes of app
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

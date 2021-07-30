@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
-
     <application
         android:name=".util.ParseApplication"
         android:allowBackup="true"
@@ -21,7 +20,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Lingwa">
-        <activity android:name=".PostDetailsActivity"></activity>
+        <activity android:name=".ChallengeActivity"></activity>
+        <activity android:name=".PostDetailsActivity" />
         <activity android:name=".FlashcardsActivity" />
         <activity android:name=".MyStuffActivity" />
         <activity android:name=".LoginActivity">
@@ -41,21 +41,22 @@
         <meta-data
             android:name="com.parse.CLIENT_KEY"
             android:value="@string/back4app_client_key" />
-
-        <meta-data android:name="com.parse.push.gcm_sender_id"
-            android:value="id:1070394322763"/>
+        <meta-data
+            android:name="com.parse.push.gcm_sender_id"
+            android:value="id:1070394322763" />
 
         <activity android:name=".ContentActivity" />
         <activity android:name=".MainActivity" />
 
-        <service
-            android:name="com.parse.fcm.ParseFirebaseMessagingService">
+        <service android:name="com.parse.fcm.ParseFirebaseMessagingService">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
-        <receiver android:name="com.parse.ParsePushBroadcastReceiver" android:exported="false">
+        <receiver
+            android:name="com.parse.ParsePushBroadcastReceiver"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.parse.push.intent.RECEIVE" />
                 <action android:name="com.parse.push.intent.OPEN" />
