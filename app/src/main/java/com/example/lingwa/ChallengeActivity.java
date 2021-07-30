@@ -1,7 +1,9 @@
 package com.example.lingwa;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,13 +24,18 @@ import com.parse.livequery.SubscriptionHandling;
 
 import org.json.JSONException;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import www.sanju.motiontoast.MotionToast;
 
 public class ChallengeActivity extends AppCompatActivity {
 
     private static final String TAG = "ChallengeActivity";
     boolean initiatedChallenge;
+    boolean userExited = false;
     ParseObject challenge;
     String challengeId;
     String identity;
@@ -59,8 +66,12 @@ public class ChallengeActivity extends AppCompatActivity {
         btnChallengeSubmit = findViewById(R.id.btnChallengeSubmit);
         tvChallengeWord = findViewById(R.id.tvChallengeWord);
 
-        client = ParseLiveQueryClient.Factory.getClient();
-        ParseQuery<ParseObject> challengeQuery = new ParseQuery<ParseObject>("Challenge");
+        try {
+            client = ParseLiveQueryClient.Factory.getClient(new URI("wss://lingwa.b4a.io/"));
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "Issue creating web socket for Parse server: " + e.toString());
+        }
+        ParseQuery<ParseObject> challengeQuery = new ParseQuery<>("Challenge");
 
         // Get which key to equal to the user -- if they initiated, listen to challenges
         // where they are the challenger, else listen to challenges where they are challenged
@@ -71,7 +82,7 @@ public class ChallengeActivity extends AppCompatActivity {
             identity = "challenged";
             oppositeIdentity = "challenger";
         }
-        challengeQuery.whereEqualTo(identity, ParseUser.getCurrentUser());
+        challengeQuery.whereEqualTo(ParseObject.KEY_OBJECT_ID, challengeId);
 
         SubscriptionHandling<ParseObject> challengeListener = client.subscribe(challengeQuery);
 
@@ -87,7 +98,21 @@ public class ChallengeActivity extends AppCompatActivity {
 
         challengeListener.handleEvent(SubscriptionHandling.Event.DELETE, (query, challenge) -> {
            // If the other user exits and deletes the challenge, this will be called.
-            finish();
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(() -> {
+                if (userExited) {
+                    return;
+                }
+                Log.i(TAG, "other user deleted challenge");
+                MotionToast.Companion.createColorToast((Activity) this,
+                        "Partner left",
+                        "Your challenger left!",
+                        MotionToast.TOAST_INFO,
+                        MotionToast.GRAVITY_BOTTOM,
+                        MotionToast.SHORT_DURATION,
+                        ResourcesCompat.getFont(this, R.font.helvetica_regular));
+                finish();
+            });
         });
 
         setUpChallenge();
@@ -100,6 +125,7 @@ public class ChallengeActivity extends AppCompatActivity {
         } catch (ParseException e) {
             Log.e(TAG, "Error deleting challenge onBackPressed: " + e.toString());
         }
+        userExited = true;
         finish();
     }
 

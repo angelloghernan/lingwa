@@ -125,6 +125,7 @@ public class MyProfileFragment extends Fragment {
             userId = getArguments().getString(ARG_USERID);
             username = getArguments().getString(ARG_USERNAME);
             bio = getArguments().getString(ARG_BIO);
+            profilePictureUrl = getArguments().getString(ARG_PROFILE_PICTURE);
         } else {
             userId = username = bio = null;
         }
