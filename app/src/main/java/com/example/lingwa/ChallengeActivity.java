@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.lingwa.models.Challenge;
+import com.example.lingwa.util.Translator;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -27,10 +28,13 @@ import com.skydoves.balloon.ArrowOrientation;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,16 +46,18 @@ public class ChallengeActivity extends AppCompatActivity {
     private static final String TAG = "ChallengeActivity";
     boolean initiatedChallenge;
     boolean userExited = false;
+    int wordIndex = 0;
     Challenge challenge;
     String challengeId;
     String identity;
     String opponentIdentity;
     ParseLiveQueryClient client;
+    List<String> words;
 
-    ImageView ivChallenger;
-    ImageView ivChallenged;
-    ProgressBar pbChallenger;
-    ProgressBar pbChallenged;
+    ImageView ivOpponent;
+    ImageView ivCurrentUser;
+    ProgressBar pbOpponent;
+    ProgressBar pbCurrentUser;
     EditText etChallenge;
     Button btnChallengeSubmit;
     TextView tvChallengeWord;
@@ -65,13 +71,22 @@ public class ChallengeActivity extends AppCompatActivity {
         challengeId = getIntent().getStringExtra("challengeId");
 
         // initialize views
-        ivChallenged = findViewById(R.id.ivChallenged);
-        ivChallenger = findViewById(R.id.ivChallenger);
-        pbChallenged = findViewById(R.id.pbChallenged);
-        pbChallenger = findViewById(R.id.pbChallenger);
+        if (initiatedChallenge) {
+            ivOpponent = findViewById(R.id.ivChallenged);
+            ivCurrentUser = findViewById(R.id.ivChallenger);
+            pbOpponent = findViewById(R.id.pbChallenged);
+            pbCurrentUser = findViewById(R.id.pbChallenger);
+        } else {
+            ivOpponent = findViewById(R.id.ivChallenger);
+            ivCurrentUser = findViewById(R.id.ivChallenged);
+            pbOpponent = findViewById(R.id.pbChallenger);
+            pbCurrentUser = findViewById(R.id.pbChallenged);
+        }
         etChallenge = findViewById(R.id.etChallenge);
         btnChallengeSubmit = findViewById(R.id.btnChallengeSubmit);
         tvChallengeWord = findViewById(R.id.tvChallengeWord);
+
+        words = new ArrayList<>();
 
         // Get which key to equal to the user -- if they initiated, listen to challenges
         // where they are the challenger, else listen to challenges where they are challenged
@@ -104,9 +119,9 @@ public class ChallengeActivity extends AppCompatActivity {
                     Log.d(TAG, "challenge is null!");
                     return;
                 }
+
                 String opponentAnswer = challenge.getAnswer(opponentIdentity);
                 String prevOpponentAnswer = this.challenge.getAnswer(opponentIdentity);
-
 
                 if (opponentAnswer != null &&
                         !opponentAnswer.equals(prevOpponentAnswer)) {
@@ -120,8 +135,10 @@ public class ChallengeActivity extends AppCompatActivity {
                             .setText(opponentAnswer)
                             .setBackgroundColorResource(R.color.info_color);
                     Balloon balloon = builder.build();
-                    balloon.show(ivChallenger);
+                    balloon.show(ivOpponent);
                 }
+
+                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) * 10);
 
                 // update class challenge entry
                 this.challenge = challenge;
@@ -169,8 +186,24 @@ public class ChallengeActivity extends AppCompatActivity {
     View.OnClickListener submitAnswer = v -> {
         String answer = etChallenge.getText().toString();
         etChallenge.setText("");
-        challenge.setAnswer(identity, answer);
-        challenge.saveInBackground();
+        Translator.translateWord(words.get(wordIndex), "es", "en", new Translator.TranslatorCallback() {
+            @Override
+            public void onTranslationSuccess(String translation) {
+                if (answer.equals(translation)) {
+                    wordIndex++;
+                    tvChallengeWord.setText(words.get(wordIndex));
+                    pbCurrentUser.setProgress(wordIndex * 10);
+                }
+                challenge.setAnswer(identity, answer);
+                challenge.setProgress(identity, wordIndex);
+                challenge.saveInBackground();
+            }
+
+            @Override
+            public void onTranslationFailure(Exception e) {
+                Log.e(TAG, "Error checking translation: " + e.toString());
+            }
+        });
     };
 
     private void setUpChallenge() {
@@ -187,8 +220,12 @@ public class ChallengeActivity extends AppCompatActivity {
             try {
                 challenge = challengeQuery.getFirst();
                 challenge.put(identity + "Ready", true);
+                JSONArray jsonWords = challenge.getWords(identity);
+                for (int i = 0; i < jsonWords.length(); i++) {
+                    words.add(jsonWords.getString(i));
+                }
                 challenge.save();
-            } catch (ParseException e) {
+            } catch (ParseException | JSONException e) {
                 Log.e(TAG, "Error preparing challenge " + e.toString());
                 return;
             }
@@ -201,12 +238,12 @@ public class ChallengeActivity extends AppCompatActivity {
                             .load(challenge.getParseUser("challenger").getParseFile("profilePicture").getUrl())
                             .circleCrop()
                             .placeholder(R.drawable.default_profile_picture)
-                            .into(ivChallenger);
+                            .into((ImageView) findViewById(R.id.ivChallenger));
                     Glide.with(this)
                             .load(challenge.getParseUser("challenged").getParseFile("profilePicture").getUrl())
                             .circleCrop()
                             .placeholder(R.drawable.default_profile_picture)
-                            .into(ivChallenged);
+                            .into((ImageView) findViewById(R.id.ivChallenged));
                 } catch (NullPointerException | JSONException e) {
                     Log.e(TAG, "Failure setting up challenge UI: " + e.toString());
                 }

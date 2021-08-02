@@ -5,6 +5,7 @@ import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 @ParseClassName("Challenge")
@@ -34,13 +35,25 @@ public class Challenge extends ParseObject {
         return getJSONArray(fromWho + SUFFIX_WORDS).getString(index);
     }
 
+    public JSONArray getWords(String fromWho) {
+        return getJSONArray(fromWho + SUFFIX_WORDS);
+    }
+
+    public int getProgress(String fromWho) {
+        return getInt(fromWho + SUFFIX_PROGRESS);
+    }
+
+    public void setProgress(String forWho, int progress) {
+        put(forWho + SUFFIX_PROGRESS, progress);
+    }
+
     // Use either KEY_CHALLENGER or KEY_CHALLENGED
     public boolean getReady(String fromWho) {
         return getBoolean(fromWho + SUFFIX_READY);
     }
 
-    public void setReady(String toWho, boolean value) {
-        put(toWho + SUFFIX_READY, value);
+    public void setReady(String forWho, boolean value) {
+        put(forWho + SUFFIX_READY, value);
     }
 
     public String getAnswer(String fromWho) {
