@@ -18,6 +18,7 @@ import com.example.lingwa.fragments.AddPostFragment;
 import com.example.lingwa.fragments.HomeFragment;
 import com.example.lingwa.fragments.MyProfileFragment;
 import com.example.lingwa.fragments.SearchFragment;
+import com.example.lingwa.models.Challenge;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.parse.Parse;
@@ -56,10 +57,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (parseLiveQueryClient != null) {
-            ParseQuery<ParseObject> challengeQuery = new ParseQuery<>("Challenge");
-            challengeQuery.include("challenger");
-            challengeQuery.whereEqualTo("challenged", ParseUser.getCurrentUser());
-            SubscriptionHandling<ParseObject> subscriptionHandling = parseLiveQueryClient.subscribe(challengeQuery);
+            ParseQuery<Challenge> challengeQuery = ParseQuery.getQuery(Challenge.class);
+            challengeQuery.include(Challenge.KEY_CHALLENGER);
+            challengeQuery.whereEqualTo(Challenge.KEY_CHALLENGED, ParseUser.getCurrentUser());
+            SubscriptionHandling<Challenge> subscriptionHandling = parseLiveQueryClient.subscribe(challengeQuery);
 
             subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, challenge) -> {
                // Run code here when a challenge is started
@@ -77,9 +78,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(intent);
                     });
 
-                    builder.setNegativeButton("Decline", (dialog, which) -> {
-                        challenge.deleteInBackground();
-                    });
+                    builder.setNegativeButton("Decline", (dialog, which) -> challenge.deleteInBackground());
 
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -99,29 +98,26 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentManager.beginTransaction().replace(R.id.flContainer, homeFragment).commit();
 
-        bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment fragment;
-                switch(item.getItemId()) {
-                    case R.id.action_home:
-                        fragment = homeFragment;
-                        break;
-                    case R.id.action_my_profile:
-                        fragment = myProfileFragment;
-                        break;
-                    case R.id.action_search:
-                        fragment = searchFragment;
-                        break;
-                    case R.id.action_new_post:
-                        fragment = addPostFragment;
-                        break;
-                    default:
-                        return false;
-                }
-                fragmentManager.beginTransaction().replace(R.id.flContainer, fragment).commit();
-                return true;
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            Fragment fragment;
+            switch(item.getItemId()) {
+                case R.id.action_home:
+                    fragment = homeFragment;
+                    break;
+                case R.id.action_my_profile:
+                    fragment = myProfileFragment;
+                    break;
+                case R.id.action_search:
+                    fragment = searchFragment;
+                    break;
+                case R.id.action_new_post:
+                    fragment = addPostFragment;
+                    break;
+                default:
+                    return false;
             }
+            fragmentManager.beginTransaction().replace(R.id.flContainer, fragment).commit();
+            return true;
         });
     }
 }

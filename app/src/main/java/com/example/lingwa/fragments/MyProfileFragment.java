@@ -30,6 +30,7 @@ import com.example.lingwa.MyStuffActivity;
 import com.example.lingwa.PostDetailsActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
+import com.example.lingwa.models.Challenge;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;
@@ -247,10 +248,10 @@ public class MyProfileFragment extends Fragment {
 
         executor.execute(() -> {
 
-            ParseObject challenge = new ParseObject("Challenge");
-            challenge.put("challenger", ParseUser.getCurrentUser());
-            ParseUser userPointer = ParseObject.createWithoutData(ParseUser.class, user.getObjectId());
-            challenge.put("challenged", userPointer);
+            Challenge challenge = new Challenge();
+            challenge.setChallenger(ParseUser.getCurrentUser());
+            ParseUser challengedPointer = ParseObject.createWithoutData(ParseUser.class, user.getObjectId());
+            challenge.setChallenged(challengedPointer);
 
             // get the 10 most challenging words from each person's saved word list
             // "challenging" currently based solely on their familiarity score, this
@@ -265,7 +266,7 @@ public class MyProfileFragment extends Fragment {
             challengedUJWQuery.setLimit(10);
             challengedUJWQuery.include(UserJoinWord.KEY_WORD);
             challengedUJWQuery.addAscendingOrder(UserJoinWord.KEY_FAMILIARITY_SCORE);
-            challengedUJWQuery.whereEqualTo(UserJoinWord.KEY_USER, userPointer);
+            challengedUJWQuery.whereEqualTo(UserJoinWord.KEY_USER, challengedPointer);
 
 
             try {
@@ -285,7 +286,7 @@ public class MyProfileFragment extends Fragment {
                 }
 
                 // Now, challenged words are words for the challenged user,
-                // and challenger words are words for the challenge initiater
+                // and challenger words are words for the challenge initiator
                 // Each list of words comes from the opposites' word list
                 List<String> challengedWords = new ArrayList<>();
                 List<String> challengerWords = new ArrayList<>();

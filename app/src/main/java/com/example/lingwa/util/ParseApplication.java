@@ -3,6 +3,7 @@ package com.example.lingwa.util;
 import android.app.Application;
 
 import com.example.lingwa.BuildConfig;
+import com.example.lingwa.models.Challenge;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;
@@ -35,6 +36,7 @@ public class ParseApplication extends Application {
         ParseObject.registerSubclass(Post.class);
         ParseObject.registerSubclass(UserLike.class);
         ParseObject.registerSubclass(FollowEntry.class);
+        ParseObject.registerSubclass(Challenge.class);
 
         Parse.initialize(new Parse.Configuration.Builder(this)
                 .applicationId(BuildConfig.BACK4APP_APP_ID)
