@@ -155,7 +155,7 @@ public class ChallengeActivity extends AppCompatActivity {
                     balloon.show(ivOpponent);
                 }
 
-                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) * 10);
+                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) / words.size());
 
                 // update class challenge entry
                 this.challenge = challenge;
@@ -201,9 +201,9 @@ public class ChallengeActivity extends AppCompatActivity {
         Translator.translateWord(words.get(wordIndex), "es", "en", new Translator.TranslatorCallback() {
             @Override
             public void onTranslationSuccess(String translation) {
-                if (answer.equals(translation)) {
+                if (answer.toLowerCase().equals(translation.toLowerCase())) {
                     wordIndex++;
-                    if (wordIndex >= 10) {
+                    if (wordIndex >= words.size()) {
                         challenge.setProgress(identity, wordIndex);
                         challenge.saveInBackground();
                         MotionToast.Companion.createColorToast((Activity) context,
@@ -217,11 +217,22 @@ public class ChallengeActivity extends AppCompatActivity {
                         return;
                     }
                     tvChallengeWord.setText(words.get(wordIndex));
-                    pbCurrentUser.setProgress(wordIndex * 10);
+                    pbCurrentUser.setProgress((int)((double)(wordIndex / words.size()) * 100));
                 }
                 challenge.setAnswer(identity, answer);
                 challenge.setProgress(identity, wordIndex);
                 challenge.saveInBackground();
+
+                // show a speech bubble under user's profile for the word they input
+                Balloon.Builder builder = new Balloon.Builder(context);
+                builder.setBackgroundColor(getResources().getColor(R.color.light_green))
+                        .setText(answer)
+                        .setAutoDismissDuration(900)
+                        .setDismissWhenTouchOutside(false)
+                        .setDismissWhenClicked(false)
+                        .setArrowOrientation(ArrowOrientation.TOP);
+                Balloon balloon = builder.build();
+                balloon.show(ivCurrentUser);
             }
 
             @Override
@@ -245,10 +256,14 @@ public class ChallengeActivity extends AppCompatActivity {
             try {
                 challenge = challengeQuery.getFirst();
                 challenge.put(identity + "Ready", true);
+
                 JSONArray jsonWords = challenge.getWords(identity);
                 for (int i = 0; i < jsonWords.length(); i++) {
                     words.add(jsonWords.getString(i));
                 }
+
+                words.size();
+
                 challenge.save();
             } catch (ParseException | JSONException e) {
                 Log.e(TAG, "Error preparing challenge " + e.toString());
