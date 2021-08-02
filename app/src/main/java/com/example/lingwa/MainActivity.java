@@ -41,51 +41,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Back4App's Parse setup
-        Parse.initialize(new Parse.Configuration.Builder(this)
-                .applicationId(BuildConfig.BACK4APP_APP_ID)
-                .clientKey(BuildConfig.BACK4APP_CLIENT_KEY)
-                .server("wss://lingwa.b4a.io/").build()
-        );
-        // Init Live Query Client
-        ParseLiveQueryClient parseLiveQueryClient = null;
-
-        try {
-            parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI("wss://lingwa.b4a.io/"));
-        } catch (URISyntaxException e) {
-            Log.e(TAG, "Issue creating web socket for Parse server: " + e.toString());
-        }
-
-        if (parseLiveQueryClient != null) {
-            ParseQuery<Challenge> challengeQuery = ParseQuery.getQuery(Challenge.class);
-            challengeQuery.include(Challenge.KEY_CHALLENGER);
-            challengeQuery.whereEqualTo(Challenge.KEY_CHALLENGED, ParseUser.getCurrentUser());
-            SubscriptionHandling<Challenge> subscriptionHandling = parseLiveQueryClient.subscribe(challengeQuery);
-
-            subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, challenge) -> {
-               // Run code here when a challenge is started
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(() -> {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-                    builder.setMessage("New challenge from user")
-                            .setTitle("Incoming Challenge");
-
-                    builder.setPositiveButton("Accept", (dialog, which) -> {
-                        Intent intent = new Intent(this, ChallengeActivity.class);
-                        intent.putExtra("initiatedChallenge", false);
-                        intent.putExtra("challengeId", challenge.getObjectId());
-                        startActivity(intent);
-                    });
-
-                    builder.setNegativeButton("Decline", (dialog, which) -> challenge.deleteInBackground());
-
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-                });
-            });
-        }
-
+        initializeSocket();
 
         final FragmentManager fragmentManager = getSupportFragmentManager();
 
@@ -119,5 +75,58 @@ public class MainActivity extends AppCompatActivity {
             fragmentManager.beginTransaction().replace(R.id.flContainer, fragment).commit();
             return true;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initializeSocket();
+    }
+
+    void initializeSocket() {
+        // Back4App's Parse setup
+        Parse.initialize(new Parse.Configuration.Builder(this)
+                .applicationId(BuildConfig.BACK4APP_APP_ID)
+                .clientKey(BuildConfig.BACK4APP_CLIENT_KEY)
+                .server("wss://lingwa.b4a.io/").build()
+        );
+        // Init Live Query Client
+        ParseLiveQueryClient parseLiveQueryClient = null;
+
+        try {
+            parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI("wss://lingwa.b4a.io/"));
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "Issue creating web socket for Parse server: " + e.toString());
+        }
+
+        if (parseLiveQueryClient != null) {
+            ParseQuery<Challenge> challengeQuery = ParseQuery.getQuery(Challenge.class);
+            challengeQuery.include(Challenge.KEY_CHALLENGER);
+            challengeQuery.whereEqualTo(Challenge.KEY_CHALLENGED, ParseUser.getCurrentUser());
+            SubscriptionHandling<Challenge> subscriptionHandling = parseLiveQueryClient.subscribe(challengeQuery);
+
+            subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, challenge) -> {
+                // Run code here when a challenge is started
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                    builder.setMessage("New challenge from user")
+                            .setTitle("Incoming Challenge");
+
+                    builder.setPositiveButton("Accept", (dialog, which) -> {
+                        Intent intent = new Intent(this, ChallengeActivity.class);
+                        intent.putExtra("initiatedChallenge", false);
+                        intent.putExtra("challengeId", challenge.getObjectId());
+                        startActivity(intent);
+                    });
+
+                    builder.setNegativeButton("Decline", (dialog, which) -> challenge.deleteInBackground());
+
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                });
+            });
+        }
     }
 }

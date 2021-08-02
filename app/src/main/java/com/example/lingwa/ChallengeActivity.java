@@ -47,6 +47,7 @@ public class ChallengeActivity extends AppCompatActivity {
     private static final String TAG = "ChallengeActivity";
     boolean initiatedChallenge;
     boolean userExited = false;
+    boolean opponentAccepted = false;
     int wordIndex = 0;
     Challenge challenge;
     String challengeId;
@@ -60,9 +61,12 @@ public class ChallengeActivity extends AppCompatActivity {
     ImageView ivCurrentUser;
     ProgressBar pbOpponent;
     ProgressBar pbCurrentUser;
+    ProgressBar pbWaiting;
     EditText etChallenge;
     Button btnChallengeSubmit;
     TextView tvChallengeWord;
+    TextView tvWaiting;
+    TextView tvChallengeTip;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +89,13 @@ public class ChallengeActivity extends AppCompatActivity {
             pbOpponent = findViewById(R.id.pbChallenger);
             pbCurrentUser = findViewById(R.id.pbChallenged);
         }
+
         etChallenge = findViewById(R.id.etChallenge);
         btnChallengeSubmit = findViewById(R.id.btnChallengeSubmit);
         tvChallengeWord = findViewById(R.id.tvChallengeWord);
+        tvChallengeTip = findViewById(R.id.tvChallengeTip);
+        pbWaiting = findViewById(R.id.pbWaiting);
+        tvWaiting = findViewById(R.id.tvWaiting);
 
         words = new ArrayList<>();
 
@@ -96,9 +104,15 @@ public class ChallengeActivity extends AppCompatActivity {
         if (initiatedChallenge) {
             identity = "challenger";
             opponentIdentity = "challenged";
+            tvChallengeWord.setVisibility(View.INVISIBLE);
+            tvChallengeTip.setVisibility(View.INVISIBLE);
+            etChallenge.setVisibility(View.INVISIBLE);
         } else {
             identity = "challenged";
             opponentIdentity = "challenger";
+            opponentAccepted = true;
+            pbWaiting.setVisibility(View.INVISIBLE);
+            tvWaiting.setVisibility(View.INVISIBLE);
         }
 
         try {
@@ -115,6 +129,17 @@ public class ChallengeActivity extends AppCompatActivity {
         challengeListener.handleEvent(SubscriptionHandling.Event.UPDATE, (query, challenge) -> {
             // do stuff when there is an update to the challenge entry
             // ie: other user solves a word or submits an answer (correct or incorrect)
+
+            if (!opponentAccepted) {
+                if (challenge.getReady(Challenge.KEY_CHALLENGED)) {
+                    opponentAccepted = true;
+                    pbWaiting.setVisibility(View.INVISIBLE);
+                    tvWaiting.setVisibility(View.INVISIBLE);
+                    tvChallengeTip.setVisibility(View.VISIBLE);
+                    tvChallengeWord.setVisibility(View.VISIBLE);
+                }
+                return;
+            }
 
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
@@ -155,7 +180,7 @@ public class ChallengeActivity extends AppCompatActivity {
                     balloon.show(ivOpponent);
                 }
 
-                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) / words.size());
+                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) * 10);
 
                 // update class challenge entry
                 this.challenge = challenge;
@@ -181,6 +206,7 @@ public class ChallengeActivity extends AppCompatActivity {
         });
 
         btnChallengeSubmit.setOnClickListener(submitAnswer);
+
         setUpChallenge();
     }
 
@@ -196,6 +222,10 @@ public class ChallengeActivity extends AppCompatActivity {
     }
 
     View.OnClickListener submitAnswer = v -> {
+        if (!opponentAccepted) {
+            return;
+        }
+
         String answer = etChallenge.getText().toString();
         etChallenge.setText("");
         Translator.translateWord(words.get(wordIndex), "es", "en", new Translator.TranslatorCallback() {
@@ -217,7 +247,7 @@ public class ChallengeActivity extends AppCompatActivity {
                         return;
                     }
                     tvChallengeWord.setText(words.get(wordIndex));
-                    pbCurrentUser.setProgress((int)((double)(wordIndex / words.size()) * 100));
+                    pbCurrentUser.setProgress(wordIndex * 10);
                 }
                 challenge.setAnswer(identity, answer);
                 challenge.setProgress(identity, wordIndex);
@@ -225,9 +255,11 @@ public class ChallengeActivity extends AppCompatActivity {
 
                 // show a speech bubble under user's profile for the word they input
                 Balloon.Builder builder = new Balloon.Builder(context);
-                builder.setBackgroundColor(getResources().getColor(R.color.light_green))
+                builder.setBackgroundColor(getResources().getColor(R.color.info_color))
                         .setText(answer)
                         .setAutoDismissDuration(900)
+                        .setBalloonAnimation(BalloonAnimation.ELASTIC)
+                        .setTextSize(18f)
                         .setDismissWhenTouchOutside(false)
                         .setDismissWhenClicked(false)
                         .setArrowOrientation(ArrowOrientation.TOP);

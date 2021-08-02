@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".ChallengeActivity">
 
+    <ProgressBar
+        android:id="@+id/pbWaiting"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvWaiting"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="280dp"
+        android:indeterminateTint="@android:color/holo_green_light" />
+
     <ImageView
         android:id="@+id/ivChallenger"
         android:layout_width="50dp"
@@ -69,7 +81,6 @@
         android:layout_below="@+id/tvChallengeTip"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="19dp"
-        android:text="WORD"
         android:textSize="34sp" />
 
     <EditText
@@ -96,4 +107,12 @@
         android:layout_marginTop="18dp"
         android:layout_marginEnd="0dp"
         android:text="Submit" />
+
+    <TextView
+        android:id="@+id/tvWaiting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Waiting for opponent..."
+        android:textSize="20sp" />
 </RelativeLayout>
