@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -53,6 +54,7 @@ public class ChallengeActivity extends AppCompatActivity {
     String opponentIdentity;
     ParseLiveQueryClient client;
     List<String> words;
+    Context context;
 
     ImageView ivOpponent;
     ImageView ivCurrentUser;
@@ -66,6 +68,7 @@ public class ChallengeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_challenge2);
+        context = this;
 
         initiatedChallenge = getIntent().getBooleanExtra("initiatedChallenge", false);
         challengeId = getIntent().getStringExtra("challengeId");
@@ -116,13 +119,27 @@ public class ChallengeActivity extends AppCompatActivity {
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
                 if (challenge == null) {
-                    Log.d(TAG, "challenge is null!");
+                    Log.e(TAG, "Challenge is null!");
+                    return;
+                }
+
+                if (challenge.getProgress(opponentIdentity) >= 10) {
+                    MotionToast.Companion.createColorToast((Activity) this,
+                            "You lose :(",
+                            "Your opponent won the match",
+                            MotionToast.TOAST_ERROR,
+                            MotionToast.GRAVITY_BOTTOM,
+                            MotionToast.SHORT_DURATION,
+                            ResourcesCompat.getFont(this, R.font.helvetica_regular));
+                    challenge.deleteInBackground();
+                    finish();
                     return;
                 }
 
                 String opponentAnswer = challenge.getAnswer(opponentIdentity);
                 String prevOpponentAnswer = this.challenge.getAnswer(opponentIdentity);
 
+                // Display a speech bubble below the opponent's profile with whatever they have just entered
                 if (opponentAnswer != null &&
                         !opponentAnswer.equals(prevOpponentAnswer)) {
                     Balloon.Builder builder = new Balloon.Builder(this);
@@ -147,18 +164,13 @@ public class ChallengeActivity extends AppCompatActivity {
 
         challengeListener.handleEvent(SubscriptionHandling.Event.DELETE, (query, challenge) -> {
            // If the other user exits and deletes the challenge, this will be called.
-
-            // Check first if this was the user that left
-            if (userExited) {
-                return;
-            }
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
 
                 Log.i(TAG, "other user deleted challenge");
                 MotionToast.Companion.createColorToast((Activity) this,
-                        "Partner left",
-                        "Your challenger left!",
+                        "Opponent left",
+                        "Your opponent left the match!",
                         MotionToast.TOAST_INFO,
                         MotionToast.GRAVITY_BOTTOM,
                         MotionToast.SHORT_DURATION,
@@ -191,6 +203,19 @@ public class ChallengeActivity extends AppCompatActivity {
             public void onTranslationSuccess(String translation) {
                 if (answer.equals(translation)) {
                     wordIndex++;
+                    if (wordIndex >= 10) {
+                        challenge.setProgress(identity, wordIndex);
+                        challenge.saveInBackground();
+                        MotionToast.Companion.createColorToast((Activity) context,
+                                "You win!",
+                                "You won the match!",
+                                MotionToast.TOAST_SUCCESS,
+                                MotionToast.GRAVITY_BOTTOM,
+                                MotionToast.SHORT_DURATION,
+                                ResourcesCompat.getFont(context, R.font.helvetica_regular));
+                        finish();
+                        return;
+                    }
                     tvChallengeWord.setText(words.get(wordIndex));
                     pbCurrentUser.setProgress(wordIndex * 10);
                 }
