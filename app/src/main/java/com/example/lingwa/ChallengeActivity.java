@@ -26,6 +26,7 @@ import com.parse.ParseUser;
 import com.parse.livequery.ParseLiveQueryClient;
 import com.parse.livequery.SubscriptionHandling;
 import com.skydoves.balloon.ArrowOrientation;
+import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 
@@ -61,11 +62,9 @@ public class ChallengeActivity extends AppCompatActivity {
     ImageView ivCurrentUser;
     ProgressBar pbOpponent;
     ProgressBar pbCurrentUser;
-    ProgressBar pbWaiting;
     EditText etChallenge;
     Button btnChallengeSubmit;
     TextView tvChallengeWord;
-    TextView tvWaiting;
     TextView tvChallengeTip;
 
     @Override
@@ -94,8 +93,6 @@ public class ChallengeActivity extends AppCompatActivity {
         btnChallengeSubmit = findViewById(R.id.btnChallengeSubmit);
         tvChallengeWord = findViewById(R.id.tvChallengeWord);
         tvChallengeTip = findViewById(R.id.tvChallengeTip);
-        pbWaiting = findViewById(R.id.pbWaiting);
-        tvWaiting = findViewById(R.id.tvWaiting);
 
         words = new ArrayList<>();
 
@@ -104,15 +101,12 @@ public class ChallengeActivity extends AppCompatActivity {
         if (initiatedChallenge) {
             identity = "challenger";
             opponentIdentity = "challenged";
-            tvChallengeWord.setVisibility(View.INVISIBLE);
             tvChallengeTip.setVisibility(View.INVISIBLE);
-            etChallenge.setVisibility(View.INVISIBLE);
+            btnChallengeSubmit.setClickable(false);
         } else {
             identity = "challenged";
             opponentIdentity = "challenger";
             opponentAccepted = true;
-            pbWaiting.setVisibility(View.INVISIBLE);
-            tvWaiting.setVisibility(View.INVISIBLE);
         }
 
         try {
@@ -130,19 +124,18 @@ public class ChallengeActivity extends AppCompatActivity {
             // do stuff when there is an update to the challenge entry
             // ie: other user solves a word or submits an answer (correct or incorrect)
 
-            if (!opponentAccepted) {
-                if (challenge.getReady(Challenge.KEY_CHALLENGED)) {
-                    opponentAccepted = true;
-                    pbWaiting.setVisibility(View.INVISIBLE);
-                    tvWaiting.setVisibility(View.INVISIBLE);
-                    tvChallengeTip.setVisibility(View.VISIBLE);
-                    tvChallengeWord.setVisibility(View.VISIBLE);
-                }
-                return;
-            }
-
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
+                if (!opponentAccepted) {
+                    if (challenge.getReady(Challenge.KEY_CHALLENGED)) {
+                        opponentAccepted = true;
+                        tvChallengeTip.setVisibility(View.VISIBLE);
+                        btnChallengeSubmit.setClickable(true);
+                        tvChallengeWord.setText(words.get(0));
+                    }
+                    return;
+                }
+
                 if (challenge == null) {
                     Log.e(TAG, "Challenge is null!");
                     return;
@@ -173,6 +166,7 @@ public class ChallengeActivity extends AppCompatActivity {
                             .setAutoDismissDuration(900)
                             .setDismissWhenClicked(false)
                             .setDismissWhenTouchOutside(false)
+                            .setArrowPositionRules(ArrowPositionRules.ALIGN_ANCHOR)
                             .setBalloonAnimation(BalloonAnimation.ELASTIC)
                             .setText(opponentAnswer)
                             .setBackgroundColorResource(R.color.info_color);
@@ -260,6 +254,7 @@ public class ChallengeActivity extends AppCompatActivity {
                         .setAutoDismissDuration(900)
                         .setBalloonAnimation(BalloonAnimation.ELASTIC)
                         .setTextSize(18f)
+                        .setArrowPositionRules(ArrowPositionRules.ALIGN_ANCHOR)
                         .setDismissWhenTouchOutside(false)
                         .setDismissWhenClicked(false)
                         .setArrowOrientation(ArrowOrientation.TOP);
@@ -287,15 +282,12 @@ public class ChallengeActivity extends AppCompatActivity {
 
             try {
                 challenge = challengeQuery.getFirst();
-                challenge.put(identity + "Ready", true);
+                challenge.setReady(identity, true);
 
                 JSONArray jsonWords = challenge.getWords(identity);
                 for (int i = 0; i < jsonWords.length(); i++) {
                     words.add(jsonWords.getString(i));
                 }
-
-                words.size();
-
                 challenge.save();
             } catch (ParseException | JSONException e) {
                 Log.e(TAG, "Error preparing challenge " + e.toString());
@@ -304,7 +296,9 @@ public class ChallengeActivity extends AppCompatActivity {
 
             handler.post(() -> {
                 try {
-                    tvChallengeWord.setText(challenge.getJSONArray(identity + "Words").getString(0));
+                    if (opponentAccepted) {
+                        tvChallengeWord.setText(words.get(0));
+                    }
                     // note: duplicate code, refactor
                     Glide.with(this)
                             .load(challenge.getParseUser("challenger").getParseFile("profilePicture").getUrl())
@@ -316,7 +310,7 @@ public class ChallengeActivity extends AppCompatActivity {
                             .circleCrop()
                             .placeholder(R.drawable.default_profile_picture)
                             .into((ImageView) findViewById(R.id.ivChallenged));
-                } catch (NullPointerException | JSONException e) {
+                } catch (NullPointerException e) {
                     Log.e(TAG, "Failure setting up challenge UI: " + e.toString());
                 }
             });

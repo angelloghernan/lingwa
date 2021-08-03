@@ -77,12 +77,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        initializeSocket();
-    }
-
     void initializeSocket() {
         // Back4App's Parse setup
         Parse.initialize(new Parse.Configuration.Builder(this)
