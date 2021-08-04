@@ -8,6 +8,8 @@ import com.parse.ParseUser;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.List;
+
 @ParseClassName("Challenge")
 public class Challenge extends ParseObject {
     public static final String KEY_CHALLENGER = "challenger";
@@ -24,6 +26,7 @@ public class Challenge extends ParseObject {
     public static final String KEY_CHALLENGER_ANSWER = "challengerAnswer";
     public static final String KEY_CHALLENGED_ANSWER = "challengedAnswer";
     public static final String SUFFIX_ANSWER = "Answer";
+    public static final String SUFFIX_WORDS_SELECTED = "SelectedWords";
 
     public ParseUser getChallenger() { return getParseUser(KEY_CHALLENGER); };
     public void setChallenger(ParseUser challenger) { put(KEY_CHALLENGER, challenger); }
@@ -38,6 +41,8 @@ public class Challenge extends ParseObject {
     public JSONArray getWords(String fromWho) {
         return getJSONArray(fromWho + SUFFIX_WORDS);
     }
+
+    public void setWords(String forWho, List<String> words) { addAll(forWho + SUFFIX_WORDS, words); }
 
     public int getProgress(String fromWho) {
         return getInt(fromWho + SUFFIX_PROGRESS);
@@ -55,6 +60,10 @@ public class Challenge extends ParseObject {
     public void setReady(String forWho, boolean value) {
         put(forWho + SUFFIX_READY, value);
     }
+
+    public boolean arePlayerWordsSelected(String fromWho) { return getBoolean(fromWho + SUFFIX_WORDS_SELECTED); }
+
+    public void setArePlayerWordsSelected(String forWho, boolean value) { put(forWho + SUFFIX_WORDS_SELECTED, value); }
 
     public String getAnswer(String fromWho) {
         return getString(fromWho + SUFFIX_ANSWER);

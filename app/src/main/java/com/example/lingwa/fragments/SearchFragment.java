@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.SearchAdapter;
@@ -126,7 +125,7 @@ public class SearchFragment extends Fragment {
 
             // If the selected user is the currently logged in user, then open their profile as usual
             if (user.getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
-                transaction.replace(R.id.flContainer, new MyProfileFragment()).commit();
+                transaction.replace(R.id.flContainer, new ProfileFragment()).commit();
                 return;
             }
 
@@ -138,7 +137,7 @@ public class SearchFragment extends Fragment {
                 Log.i(TAG, "could not get profile picture for user " + user.getUsername());
             }
 
-            MyProfileFragment fragment = MyProfileFragment
+            ProfileFragment fragment = ProfileFragment
                     .newInstance(user.getObjectId(),
                             user.getUsername(),
                             user.getString("bio"),

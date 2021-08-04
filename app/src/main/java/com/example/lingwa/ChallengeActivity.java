@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.lingwa.models.Challenge;
 import com.example.lingwa.util.Translator;
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -46,9 +47,12 @@ import www.sanju.motiontoast.MotionToast;
 public class ChallengeActivity extends AppCompatActivity {
 
     private static final String TAG = "ChallengeActivity";
+    private static final int NUM_WORDS = 10;
+
     boolean initiatedChallenge;
     boolean userExited = false;
-    boolean opponentAccepted = false;
+    boolean opponentIsReady = false;
+    boolean opponentHasSelected = false;
     int wordIndex = 0;
     Challenge challenge;
     String challengeId;
@@ -75,6 +79,9 @@ public class ChallengeActivity extends AppCompatActivity {
 
         initiatedChallenge = getIntent().getBooleanExtra("initiatedChallenge", false);
         challengeId = getIntent().getStringExtra("challengeId");
+        identity = getIntent().getStringExtra("identity");
+        opponentIdentity = getIntent().getStringExtra("opponentIdentity");
+
 
         // initialize views
         if (initiatedChallenge) {
@@ -96,17 +103,9 @@ public class ChallengeActivity extends AppCompatActivity {
 
         words = new ArrayList<>();
 
-        // Get which key to equal to the user -- if they initiated, listen to challenges
-        // where they are the challenger, else listen to challenges where they are challenged
-        if (initiatedChallenge) {
-            identity = "challenger";
-            opponentIdentity = "challenged";
+        if (!opponentIsReady) {
             tvChallengeTip.setVisibility(View.INVISIBLE);
             btnChallengeSubmit.setClickable(false);
-        } else {
-            identity = "challenged";
-            opponentIdentity = "challenger";
-            opponentAccepted = true;
         }
 
         try {
@@ -117,8 +116,43 @@ public class ChallengeActivity extends AppCompatActivity {
         ParseQuery<Challenge> challengeQuery = ParseQuery.getQuery(Challenge.class);
 
         challengeQuery.whereEqualTo(ParseObject.KEY_OBJECT_ID, challengeId);
+        challengeQuery.whereExists(opponentIdentity + Challenge.SUFFIX_WORDS);
 
         SubscriptionHandling<Challenge> challengeListener = client.subscribe(challengeQuery);
+
+        challengeListener.handleSubscribe(query -> {
+            // Handle stuff when the client has subscribed to the query.
+            // Here, we initialize our challenge variable and see if the other players' words are selected.
+            // If so, we set up the challenge so we can be ready in time
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(() -> {
+                ParseQuery<Challenge> tempChallengeQuery = ParseQuery.getQuery(Challenge.class);
+                tempChallengeQuery.whereEqualTo(Challenge.KEY_OBJECT_ID, challengeId);
+                try {
+                    this.challenge = tempChallengeQuery.getFirst();
+                    opponentHasSelected = challenge.arePlayerWordsSelected(opponentIdentity);
+                    if (opponentHasSelected) {
+                        setUpChallenge();
+                    }
+                } catch (ParseException e) {
+                    onBackPressed();
+                }
+            });
+        });
+
+        challengeListener.handleEvent(SubscriptionHandling.Event.ENTER, (query, challenge) -> {
+            // Handle stuff when a query begins to match the parameters
+            // In this case, when a query has the opponents' words existing
+            // In other words, when the opponent has finished selecting their words and
+            // has uploaded them to the Challenge entry in the server.
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(() -> {
+                if (!opponentHasSelected) {
+                    opponentHasSelected = true;
+                    setUpChallenge();
+                }
+            });
+        });
 
         challengeListener.handleEvent(SubscriptionHandling.Event.UPDATE, (query, challenge) -> {
             // do stuff when there is an update to the challenge entry
@@ -126,22 +160,29 @@ public class ChallengeActivity extends AppCompatActivity {
 
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
-                if (!opponentAccepted) {
-                    if (challenge.getReady(Challenge.KEY_CHALLENGED)) {
-                        opponentAccepted = true;
-                        tvChallengeTip.setVisibility(View.VISIBLE);
-                        btnChallengeSubmit.setClickable(true);
-                        tvChallengeWord.setText(words.get(0));
-                    }
-                    return;
-                }
-
                 if (challenge == null) {
                     Log.e(TAG, "Challenge is null!");
                     return;
                 }
 
-                if (challenge.getProgress(opponentIdentity) >= 10) {
+                // Since the query (which has already been caught) has updated from another source, we know that
+                // this must be because the opponent has become readied. In that case,
+                // we must either make sure we are *also* ready in case we somehow
+                // haven't registered that they have selected their words or start the challenge right away
+                if (!opponentIsReady) {
+                    if (!opponentHasSelected) {
+                        opponentHasSelected = true;
+                        setUpChallenge();
+                    } else if (challenge.getReady(opponentIdentity)) {
+                        tvChallengeTip.setVisibility(View.VISIBLE);
+                        btnChallengeSubmit.setClickable(true);
+                        opponentIsReady = true;
+                        tvChallengeWord.setText(words.get(0));
+                    }
+                    return;
+                }
+
+                if (challenge.getProgress(opponentIdentity) >= NUM_WORDS) {
                     MotionToast.Companion.createColorToast((Activity) this,
                             "You lose :(",
                             "Your opponent won the match",
@@ -174,7 +215,7 @@ public class ChallengeActivity extends AppCompatActivity {
                     balloon.show(ivOpponent);
                 }
 
-                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) * 10);
+                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) * 100 / NUM_WORDS);
 
                 // update class challenge entry
                 this.challenge = challenge;
@@ -185,7 +226,9 @@ public class ChallengeActivity extends AppCompatActivity {
            // If the other user exits and deletes the challenge, this will be called.
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
-
+                if(userExited) {
+                    return;
+                }
                 Log.i(TAG, "other user deleted challenge");
                 MotionToast.Companion.createColorToast((Activity) this,
                         "Opponent left",
@@ -201,14 +244,16 @@ public class ChallengeActivity extends AppCompatActivity {
 
         btnChallengeSubmit.setOnClickListener(submitAnswer);
 
-        setUpChallenge();
+        if (opponentHasSelected) {
+            setUpChallenge();
+        }
     }
 
     @Override
     public void onBackPressed() {
         try {
             challenge.delete();
-        } catch (ParseException e) {
+        } catch (ParseException | NullPointerException e) {
             Log.e(TAG, "Error deleting challenge onBackPressed: " + e.toString());
         }
         userExited = true;
@@ -216,7 +261,7 @@ public class ChallengeActivity extends AppCompatActivity {
     }
 
     View.OnClickListener submitAnswer = v -> {
-        if (!opponentAccepted) {
+        if (!opponentIsReady) {
             return;
         }
 
@@ -241,7 +286,7 @@ public class ChallengeActivity extends AppCompatActivity {
                         return;
                     }
                     tvChallengeWord.setText(words.get(wordIndex));
-                    pbCurrentUser.setProgress(wordIndex * 10);
+                    pbCurrentUser.setProgress(wordIndex * 100 / NUM_WORDS);
                 }
                 challenge.setAnswer(identity, answer);
                 challenge.setProgress(identity, wordIndex);
@@ -270,6 +315,7 @@ public class ChallengeActivity extends AppCompatActivity {
     };
 
     private void setUpChallenge() {
+        // Get the words for the player to solve and mark the player as ready
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
@@ -277,8 +323,8 @@ public class ChallengeActivity extends AppCompatActivity {
         executor.execute(() -> {
             ParseQuery<Challenge> challengeQuery = ParseQuery.getQuery(Challenge.class);
             challengeQuery.whereEqualTo(ParseObject.KEY_OBJECT_ID, challengeId);
-            challengeQuery.include("challenger");
-            challengeQuery.include("challenged");
+            challengeQuery.include(Challenge.KEY_CHALLENGED);
+            challengeQuery.include(Challenge.KEY_CHALLENGER);
 
             try {
                 challenge = challengeQuery.getFirst();
@@ -296,17 +342,17 @@ public class ChallengeActivity extends AppCompatActivity {
 
             handler.post(() -> {
                 try {
-                    if (opponentAccepted) {
+                    if (opponentIsReady) {
                         tvChallengeWord.setText(words.get(0));
                     }
                     // note: duplicate code, refactor
                     Glide.with(this)
-                            .load(challenge.getParseUser("challenger").getParseFile("profilePicture").getUrl())
+                            .load(challenge.getChallenger().getParseFile("profilePicture").getUrl())
                             .circleCrop()
                             .placeholder(R.drawable.default_profile_picture)
                             .into((ImageView) findViewById(R.id.ivChallenger));
                     Glide.with(this)
-                            .load(challenge.getParseUser("challenged").getParseFile("profilePicture").getUrl())
+                            .load(challenge.getChallenged().getParseFile("profilePicture").getUrl())
                             .circleCrop()
                             .placeholder(R.drawable.default_profile_picture)
                             .into((ImageView) findViewById(R.id.ivChallenged));

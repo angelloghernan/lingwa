@@ -1,36 +1,35 @@
 package com.example.lingwa;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.MenuItem;
 
 import com.example.lingwa.fragments.AddPostFragment;
 import com.example.lingwa.fragments.HomeFragment;
-import com.example.lingwa.fragments.MyProfileFragment;
+import com.example.lingwa.fragments.ProfileFragment;
 import com.example.lingwa.fragments.SearchFragment;
 import com.example.lingwa.models.Challenge;
+import com.example.lingwa.models.UserJoinWord;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 import com.parse.Parse;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.livequery.ParseLiveQueryClient;
 import com.parse.livequery.SubscriptionHandling;
 
+import org.parceler.Parcels;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bnvTabs);
 
         final Fragment homeFragment = new HomeFragment();
-        final Fragment myProfileFragment = new MyProfileFragment();
+        final Fragment myProfileFragment = new ProfileFragment();
         final Fragment searchFragment = new SearchFragment();
         final Fragment addPostFragment = new AddPostFragment();
 
@@ -109,10 +108,30 @@ public class MainActivity extends AppCompatActivity {
                             .setTitle("Incoming Challenge");
 
                     builder.setPositiveButton("Accept", (dialog, which) -> {
-                        Intent intent = new Intent(this, ChallengeActivity.class);
-                        intent.putExtra("initiatedChallenge", false);
-                        intent.putExtra("challengeId", challenge.getObjectId());
-                        startActivity(intent);
+                        ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
+                        ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
+                        ujwQuery.whereEqualTo(UserJoinWord.KEY_SAVED_BY, UserJoinWord.KEY_USER);
+                        ujwQuery.include(UserJoinWord.KEY_WORD);
+
+                        ujwQuery.findInBackground((ujwEntries, e) -> {
+                            if (e != null) {
+                                Log.e(TAG, "Error accepting challenge: " + e.toString());
+                                challenge.deleteInBackground();
+                                return;
+                            }
+
+                            List<String> wordList = new ArrayList<>();
+
+                            for (int i = 0; i < ujwEntries.size(); i++) {
+                                wordList.add(ujwEntries.get(i).getWord().getOriginalWord());
+                            }
+
+                            Intent intent = new Intent(this, ChallengePickerActivity.class);
+                            intent.putExtra("initiatedChallenge", false);
+                            intent.putExtra("challengeId", challenge.getObjectId());
+                            intent.putExtra("wordList", Parcels.wrap(wordList));
+                            startActivity(intent);
+                        });
                     });
 
                     builder.setNegativeButton("Decline", (dialog, which) -> challenge.deleteInBackground());

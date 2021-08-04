@@ -20,11 +20,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Lingwa">
-        <activity android:name=".ChallengeActivity"></activity>
+        <activity
+            android:name=".ChallengePickerActivity"
+            android:noHistory="true" />
+        <activity android:name=".ChallengeActivity" />
         <activity android:name=".PostDetailsActivity" />
         <activity android:name=".FlashcardsActivity" />
         <activity android:name=".MyStuffActivity" />
-        <activity android:name=".LoginActivity">
+        <activity android:name=".LoginActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -24,7 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.lingwa.ChallengeActivity;
+import com.example.lingwa.ChallengePickerActivity;
 import com.example.lingwa.LoginActivity;
 import com.example.lingwa.MyStuffActivity;
 import com.example.lingwa.PostDetailsActivity;
@@ -35,26 +35,19 @@ import com.example.lingwa.models.Content;
 import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;
 import com.example.lingwa.models.UserJoinWord;
-import com.example.lingwa.models.Word;
 import com.example.lingwa.util.ParseApplication;
 import com.example.lingwa.wrappers.PostWrapper;
-import com.parse.FindCallback;
 import com.parse.GetCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -62,10 +55,10 @@ import www.sanju.motiontoast.MotionToast;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link MyProfileFragment#newInstance} factory method to
+ * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MyProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment {
 
     private static final String ARG_USERID = "userid";
     public static final String ARG_USERNAME = "username";
@@ -94,7 +87,7 @@ public class MyProfileFragment extends Fragment {
     List<Post> postList;
     PostAdapter adapter;
 
-    public MyProfileFragment() {
+    public ProfileFragment() {
         // Required empty public constructor
     }
 
@@ -108,8 +101,8 @@ public class MyProfileFragment extends Fragment {
      * @param bio Bio of the user
      * @return A new instance of fragment MyProfileFragment.
      */
-    public static MyProfileFragment newInstance(String userId, String username, String bio, String profilePictureUrl) {
-        MyProfileFragment fragment = new MyProfileFragment();
+    public static ProfileFragment newInstance(String userId, String username, String bio, String profilePictureUrl) {
+        ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putString(ARG_USERID, userId);
         args.putString(ARG_USERNAME, username);
@@ -160,6 +153,8 @@ public class MyProfileFragment extends Fragment {
             username = user.getUsername();
             bio = user.getString("bio");
             try {
+                // note: currently this always returns null because the getCurrentUser
+                // doesn't have parse files attached. If there is time to change, please change
                 profilePictureUrl = user.getParseFile("profilePicture").getUrl();
             } catch (NullPointerException e) {
                 Log.e(TAG, "error getting profile picture: " + e.toString());
@@ -245,6 +240,7 @@ public class MyProfileFragment extends Fragment {
     View.OnClickListener challengeUser = v -> {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
+        List<String> wordList = new ArrayList<>();
 
         executor.execute(() -> {
 
@@ -253,28 +249,22 @@ public class MyProfileFragment extends Fragment {
             ParseUser challengedPointer = ParseObject.createWithoutData(ParseUser.class, user.getObjectId());
             challenge.setChallenged(challengedPointer);
 
-            // get the 10 most challenging words from each person's saved word list
-            // "challenging" currently based solely on their familiarity score, this
-            // can be changed later to use the same metrics as the practice algorithm
+            // we need to check first and see if both users have at least 10 words saved to start the challenge
             ParseQuery<UserJoinWord> challengerUJWQuery = ParseQuery.getQuery(UserJoinWord.class);
-            challengerUJWQuery.setLimit(10);
-            challengerUJWQuery.addAscendingOrder(UserJoinWord.KEY_FAMILIARITY_SCORE);
             challengerUJWQuery.include(UserJoinWord.KEY_WORD);
+            challengerUJWQuery.whereEqualTo(UserJoinWord.KEY_SAVED_BY, UserJoinWord.KEY_USER);
             challengerUJWQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
 
             ParseQuery<UserJoinWord> challengedUJWQuery = ParseQuery.getQuery(UserJoinWord.class);
-            challengedUJWQuery.setLimit(10);
             challengedUJWQuery.include(UserJoinWord.KEY_WORD);
-            challengedUJWQuery.addAscendingOrder(UserJoinWord.KEY_FAMILIARITY_SCORE);
+            challengedUJWQuery.whereEqualTo(UserJoinWord.KEY_SAVED_BY, UserJoinWord.KEY_USER);
             challengedUJWQuery.whereEqualTo(UserJoinWord.KEY_USER, challengedPointer);
 
 
             try {
-                List<UserJoinWord> challengerUJWEntries = challengerUJWQuery.find();
-                List<UserJoinWord> challengedUJWEntries = challengedUJWQuery.find();
 
-                if (challengerUJWEntries.size() != 10 ||
-                    challengedUJWEntries.size() != 10) {
+                if (challengerUJWQuery.count() < 10 ||
+                    challengedUJWQuery.count() < 10) {
                     MotionToast.Companion.createColorToast((Activity) getContext(),
                             "Info",
                             "You and the other user need at least 10 words saved to challenge each other",
@@ -284,21 +274,12 @@ public class MyProfileFragment extends Fragment {
                             ResourcesCompat.getFont(getContext(), R.font.helvetica_regular));
                     return;
                 }
-
-                // Now, challenged words are words for the challenged user,
-                // and challenger words are words for the challenge initiator
-                // Each list of words comes from the opposites' word list
-                List<String> challengedWords = new ArrayList<>();
-                List<String> challengerWords = new ArrayList<>();
-
-                for (int i = 0; i < 10; i++) {
-                    challengedWords.add(challengerUJWEntries.get(i).getWord().getOriginalWord());
-                    challengerWords.add(challengedUJWEntries.get(i).getWord().getOriginalWord());
-                }
-
-                challenge.addAll("challengerWords", challengerWords);
-                challenge.addAll("challengedWords", challengedWords);
                 challenge.save();
+
+                List<UserJoinWord> challengerUJWEntries = challengerUJWQuery.find();
+                for (int i = 0; i < challengerUJWEntries.size(); i++) {
+                    wordList.add(challengerUJWEntries.get(i).getWord().getOriginalWord());
+                }
 
             } catch (ParseException e) {
                 Log.e(TAG, "Error challenging user: " + e.toString());
@@ -313,9 +294,10 @@ public class MyProfileFragment extends Fragment {
             }
 
             handler.post(() -> {
-                Intent intent = new Intent(getContext(), ChallengeActivity.class);
+                Intent intent = new Intent(getContext(), ChallengePickerActivity.class);
                 intent.putExtra("initiatedChallenge", true);
                 intent.putExtra("challengeId", challenge.getObjectId());
+                intent.putExtra("wordList", Parcels.wrap(wordList));
                 Log.i(TAG, challenge.getObjectId());
                 startActivity(intent);
             });
