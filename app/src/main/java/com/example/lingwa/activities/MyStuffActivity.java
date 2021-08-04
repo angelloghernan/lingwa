@@ -127,6 +127,8 @@ public class MyStuffActivity extends AppCompatActivity {
 
         btnPractice.setOnClickListener(startPractice);
         btnUpload.setOnClickListener(uploadBook);
+
+        getUserBooks();
     }
 
     // When the practice button is clicked, make sure there are words available for the user before
@@ -233,6 +235,7 @@ public class MyStuffActivity extends AppCompatActivity {
     private void getUserBooks() {
         ParseQuery<Content> bookQuery = ParseQuery.getQuery(Content.class);
         bookQuery.whereEqualTo(Content.KEY_UPLOADER, ParseUser.getCurrentUser());
+        bookQuery.whereEqualTo(Content.KEY_TYPE, Content.TYPE_BOOK);
         bookQuery.findInBackground((books, e) -> {
             if (e != null) {
                 Log.e(TAG, "Error getting user's books: " + e.toString());
@@ -241,8 +244,10 @@ public class MyStuffActivity extends AppCompatActivity {
 
             for (int i = 0; i < books.size(); i++) {
                 ContentWrapper contentWrapper = ContentWrapper.fromContent(books.get(i));
+                bookList.add(contentWrapper);
             }
 
+            bookAdapter.notifyDataSetChanged();
         });
     }
 
@@ -250,6 +255,7 @@ public class MyStuffActivity extends AppCompatActivity {
       // do stuff when book item clicked
         try {
             File bookFile = book.fetchIfNeeded().getParseFile(Content.KEY_ATTACHMENT).getFile();
+            String path = bookFile.getAbsolutePath();
         } catch (ParseException | NullPointerException e) {
             Log.e(TAG, "Failed to open book: " + e.toString());
         }

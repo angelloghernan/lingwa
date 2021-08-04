@@ -75,6 +75,7 @@ public class ProfileFragment extends Fragment {
     private ParseUser user;
     boolean followCheckFinished = false;
     boolean userFollows = false;
+    boolean attemptingToChallenge = false;
 
     Button btnRight;
     Button btnLeft;
@@ -238,6 +239,12 @@ public class ProfileFragment extends Fragment {
     };
 
     View.OnClickListener challengeUser = v -> {
+        if (attemptingToChallenge) {
+            return;
+        }
+
+        attemptingToChallenge = true;
+
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         List<String> wordList = new ArrayList<>();
@@ -298,7 +305,7 @@ public class ProfileFragment extends Fragment {
                 intent.putExtra("initiatedChallenge", true);
                 intent.putExtra("challengeId", challenge.getObjectId());
                 intent.putExtra("wordList", Parcels.wrap(wordList));
-                Log.i(TAG, challenge.getObjectId());
+                attemptingToChallenge = false;
                 startActivity(intent);
             });
         });
