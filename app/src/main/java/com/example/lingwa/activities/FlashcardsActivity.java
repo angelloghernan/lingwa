@@ -270,12 +270,9 @@ public class FlashcardsActivity extends AppCompatActivity {
     private void flipFlashcard(float degrees, String newText) {
         flFlashcard.animate().rotationY(degrees).setDuration(FLIP_DURATION).start();
         tvWord.animate().rotationY(degrees).setDuration(FLIP_DURATION).start();
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                tvWord.setText(newText);
-                flashcardFlipping = false;
-            }
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            tvWord.setText(newText);
+            flashcardFlipping = false;
         }, FLIP_DURATION/2);
     }
 

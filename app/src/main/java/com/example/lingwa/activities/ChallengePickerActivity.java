@@ -105,8 +105,6 @@ public class ChallengePickerActivity extends AppCompatActivity {
                     }
                     challenge.setWords(opponentIdentity, checkedWordList);
                     challenge.setArePlayerWordsSelected(identity, true);
-                    opponentAccepted = challenge.getReady(opponentIdentity);
-                    opponentHasSelected = challenge.arePlayerWordsSelected(opponentIdentity);
                     challenge.save();
                 } catch (ParseException e) {
                     Log.e(TAG, "Error finding and saving challenge: " + e.toString());
@@ -119,8 +117,6 @@ public class ChallengePickerActivity extends AppCompatActivity {
                 intent.putExtra("challengeId", challengeId);
                 intent.putExtra("identity", identity);
                 intent.putExtra("opponentIdentity", opponentIdentity);
-                intent.putExtra("opponentAccepted", opponentAccepted);
-                intent.putExtra("opponentHasSelected", opponentHasSelected);
 
                 handler.post(() -> {
                     startActivity(intent);
