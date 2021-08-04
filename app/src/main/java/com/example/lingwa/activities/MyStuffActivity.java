@@ -7,15 +7,19 @@ import androidx.core.content.res.ResourcesCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -158,39 +162,55 @@ public class MyStuffActivity extends AppCompatActivity {
             // get the new word (wrapper) list so we can use the familiarity scores
             wordList = Parcels.unwrap(data.getParcelableExtra("wordList"));
         } else if (requestCode == UPLOAD_REQUEST_CODE) {
-            ContentResolver resolver = context.getContentResolver();
+            final EditText titleInput = new EditText(this);
+            titleInput.setInputType(InputType.TYPE_TEXT_VARIATION_NORMAL);
 
-            Uri uri = data.getData();
-            FileUtils fileUtils = new FileUtils();
-            String path = fileUtils.getPath(this, uri);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Add Book Title");
+            builder.setView(titleInput);
 
-            ParseFile epubFile = new ParseFile(new File(path));
-            pbStuffLoading.setVisibility(View.VISIBLE);
-            Content bookContent = new Content();
-            bookContent.setAttachment(epubFile);
-            bookContent.setUploader(ParseUser.getCurrentUser());
-            bookContent.setContentType(Content.TYPE_BOOK);
-            bookContent.setTitle("Test");
-            bookContent.saveInBackground(e -> {
-                if (e != null) {
-                    Log.e(TAG, "error saving epub: " + e.toString());
-                    return;
-                }
-                Intent intent = new Intent(context, ContentActivity.class);
-                ContentWrapper contentWrapper = new ContentWrapper();
-                contentWrapper.epubPath = path;
-                contentWrapper.contentType = Content.TYPE_BOOK;
-                contentWrapper.objectId = bookContent.getObjectId();
-                contentWrapper.attachmentUrl = null;
-                contentWrapper.title = bookContent.getTitle();
-
-                intent.putExtra("content", Parcels.wrap(contentWrapper));
-
-                pbStuffLoading.setVisibility(View.INVISIBLE);
-
-                startActivity(intent);
+            // Set up the buttons
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                String title = titleInput.getText().toString();
+                Uri uri = data.getData();
+                FileUtils fileUtils = new FileUtils();
+                String path = fileUtils.getPath(context, uri);
+                readyBookContent(title, path);
             });
+
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+            builder.create();
         }
+    }
+
+    private void readyBookContent(String title, String path) {
+        ParseFile epubFile = new ParseFile(new File(path));
+        pbStuffLoading.setVisibility(View.VISIBLE);
+        Content bookContent = new Content();
+        bookContent.setAttachment(epubFile);
+        bookContent.setUploader(ParseUser.getCurrentUser());
+        bookContent.setContentType(Content.TYPE_BOOK);
+        bookContent.setTitle(title);
+        bookContent.saveInBackground(e -> {
+            if (e != null) {
+                Log.e(TAG, "error saving epub: " + e.toString());
+                return;
+            }
+            Intent intent = new Intent(context, ContentActivity.class);
+            ContentWrapper contentWrapper = new ContentWrapper();
+            contentWrapper.epubPath = path;
+            contentWrapper.contentType = Content.TYPE_BOOK;
+            contentWrapper.objectId = bookContent.getObjectId();
+            contentWrapper.attachmentUrl = null;
+            contentWrapper.title = bookContent.getTitle();
+
+            intent.putExtra("content", Parcels.wrap(contentWrapper));
+
+            pbStuffLoading.setVisibility(View.INVISIBLE);
+
+            startActivity(intent);
+        });
     }
 
     // permissions currently incomplete but working for purposes of app

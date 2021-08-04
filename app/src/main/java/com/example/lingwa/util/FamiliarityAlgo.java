@@ -81,7 +81,7 @@ public class FamiliarityAlgo {
                     continue;
                 }
                 Word word = words.get(i);
-                WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(), "algorithm",
+                WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(), "unsaved",
                         content.getObjectId());
                 wordWrapper.setParentObjectId("null");
                 wordWrapper.setFamiliarityScore(1);
@@ -105,8 +105,6 @@ public class FamiliarityAlgo {
         content = contentQuery.getFirst();
 
         // remove any non-letter characters from the body and split into words
-        // note: in the future, this is going to require taking only the first X characters
-        // of a given article since it will be too long to do this quickly, but for now this works
         String[] contentBodyWords = Objects.requireNonNull(content.getBody())
                                             .replaceAll("[^\\p{L} ]", " ")
                                             .split(" ");
