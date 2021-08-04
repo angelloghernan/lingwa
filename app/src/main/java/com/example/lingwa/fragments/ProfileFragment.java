@@ -155,8 +155,8 @@ public class ProfileFragment extends Fragment {
             try {
                 // note: currently this always returns null because the getCurrentUser
                 // doesn't have parse files attached. If there is time to change, please change
-                profilePictureUrl = user.getParseFile("profilePicture").getUrl();
-            } catch (NullPointerException e) {
+                profilePictureUrl = user.fetchIfNeeded().getParseFile("profilePicture").getUrl();
+            } catch (NullPointerException | ParseException e) {
                 Log.e(TAG, "error getting profile picture: " + e.toString());
             }
             // Make sure the buttons on the left and right have the correct functionalities
