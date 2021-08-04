@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
@@ -56,6 +58,7 @@ public class MyStuffActivity extends AppCompatActivity {
     Button btnPractice;
     Button btnUpload;
     ProgressBar pbStuffLoading;
+    RecyclerView rvBooks;
     Context context = this;
     List<UserJoinWord> ujwEntryList = null;
     ArrayList<String> displayedWords = null;
@@ -69,11 +72,16 @@ public class MyStuffActivity extends AppCompatActivity {
         btnPractice = findViewById(R.id.btnPractice);
         btnUpload = findViewById(R.id.btnUpload);
         pbStuffLoading = findViewById(R.id.pbStuffLoading);
+        rvBooks = findViewById(R.id.rvBooks);
         pbStuffLoading.setActivated(false);
 
         ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
         ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
         ujwQuery.include("word");
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setOrientation(RecyclerView.HORIZONTAL);
+        rvBooks.setLayoutManager(layoutManager);
 
         try {
             ujwEntryList = ujwQuery.find();

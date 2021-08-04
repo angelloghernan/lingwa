@@ -18,25 +18,35 @@
         android:textSize="20sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/pbStuffLoading"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginBottom="5dp"
+        android:text="Saved Books"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
     <Button
         android:id="@+id/btnPractice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/lvSavedWords"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="11dp"
-        android:layout_marginBottom="319dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
         android:text="Practice" />
 
     <ListView
         android:id="@+id/lvSavedWords"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/btnPractice"
+        android:layout_height="300dp"
         android:layout_below="@+id/textView2"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginTop="10dp" />
 
     <ProgressBar
         android:id="@+id/pbStuffLoading"
@@ -47,7 +57,7 @@
         android:layout_alignParentStart="true"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="181dp"
-        android:layout_marginTop="31dp"
+        android:layout_marginTop="17dp"
         android:indeterminateTint="@android:color/holo_green_light"
         android:visibility="invisible" />
 
@@ -60,5 +70,16 @@
         android:layout_marginEnd="3dp"
         android:layout_marginBottom="1dp"
         android:text="Upload" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvBooks"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/btnUpload"
+        android:layout_below="@+id/btnPractice"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal" />
 
 </RelativeLayout>
