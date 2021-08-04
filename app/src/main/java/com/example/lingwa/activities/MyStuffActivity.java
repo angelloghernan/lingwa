@@ -26,12 +26,15 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.example.lingwa.R;
+import com.example.lingwa.adapters.BookAdapter;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
 import com.example.lingwa.util.FileUtils;
+import com.example.lingwa.util.epubparser.BookSection;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.example.lingwa.wrappers.WordWrapper;
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
@@ -54,6 +57,7 @@ public class MyStuffActivity extends AppCompatActivity {
     private static final String TAG = "MyStuffActivity";
     public static final int FLASHCARD_REQUEST_CODE = 10;
     private static final int UPLOAD_REQUEST_CODE = 11;
+
     ListView lvSavedWords;
     Button btnPractice;
     Button btnUpload;
@@ -63,6 +67,9 @@ public class MyStuffActivity extends AppCompatActivity {
     List<UserJoinWord> ujwEntryList = null;
     ArrayList<String> displayedWords = null;
     ArrayList<WordWrapper> wordList = new ArrayList<>();
+
+    BookAdapter bookAdapter;
+    ArrayList<ContentWrapper> bookList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +86,11 @@ public class MyStuffActivity extends AppCompatActivity {
         ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
         ujwQuery.include("word");
 
+        bookAdapter = new BookAdapter(this, bookList, callback);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.HORIZONTAL);
         rvBooks.setLayoutManager(layoutManager);
+        rvBooks.setAdapter(bookAdapter);
 
         try {
             ujwEntryList = ujwQuery.find();
@@ -220,6 +229,31 @@ public class MyStuffActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
+
+    private void getUserBooks() {
+        ParseQuery<Content> bookQuery = ParseQuery.getQuery(Content.class);
+        bookQuery.whereEqualTo(Content.KEY_UPLOADER, ParseUser.getCurrentUser());
+        bookQuery.findInBackground((books, e) -> {
+            if (e != null) {
+                Log.e(TAG, "Error getting user's books: " + e.toString());
+                return;
+            }
+
+            for (int i = 0; i < books.size(); i++) {
+                ContentWrapper contentWrapper = ContentWrapper.fromContent(books.get(i));
+            }
+
+        });
+    }
+
+    BookAdapter.AdapterCallback callback = (position, book) -> {
+      // do stuff when book item clicked
+        try {
+            File bookFile = book.fetchIfNeeded().getParseFile(Content.KEY_ATTACHMENT).getFile();
+        } catch (ParseException | NullPointerException e) {
+            Log.e(TAG, "Failed to open book: " + e.toString());
+        }
+    };
 
     // permissions currently incomplete but working for purposes of app
     @Override

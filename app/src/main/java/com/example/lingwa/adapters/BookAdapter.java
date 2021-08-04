@@ -13,6 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lingwa.R;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.Post;
+import com.example.lingwa.wrappers.ContentWrapper;
+import com.parse.ParseFile;
+import com.parse.fcm.ParseFCM;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -22,11 +25,11 @@ import nl.siegmann.epublib.domain.Book;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
-    List<Content> bookList;
+    List<ContentWrapper> bookList;
     Context context;
     AdapterCallback callback;
 
-    public BookAdapter(Context context, List<Content> bookList, AdapterCallback callback) {
+    public BookAdapter(Context context, List<ContentWrapper> bookList, AdapterCallback callback) {
         this.context = context;
         this.bookList = bookList;
         this.callback = callback;
@@ -43,8 +46,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull BookAdapter.ViewHolder holder, int position) {
-        Content book = bookList.get(position);
-        holder.bind(book);
+        ContentWrapper bookWrapper = bookList.get(position);
+        holder.bind(bookWrapper);
     }
 
     @Override
@@ -61,8 +64,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             tvBookTitle = itemView.findViewById(R.id.tvBookTitle);
         }
 
-        public void bind(Content book) {
-            tvBookTitle.setText(book.getTitle());
+        public void bind(ContentWrapper bookWrapper) {
+            tvBookTitle.setText(bookWrapper.title);
         }
 
         @Override
@@ -70,7 +73,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             int position = getAdapterPosition();
 
             if (position != RecyclerView.NO_POSITION) {
-                Content book = bookList.get(getAdapterPosition());
+                ContentWrapper bookWrapper = bookList.get(getAdapterPosition());
+                Content book = Content.createWithoutData(Content.class, bookWrapper.objectId);
                 callback.onBookSelected(position, book);
             }
         }

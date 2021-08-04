@@ -36,7 +36,10 @@ public class ContentWrapper {
         contentWrapper.author = content.getAuthor();
         contentWrapper.body = content.getBody();
         contentWrapper.contentType = content.getContentType();
-        contentWrapper.thumbnailUrl = content.getThumbnail().getUrl();
+
+        if (content.getThumbnail() != null) {
+            contentWrapper.thumbnailUrl = content.getThumbnail().getUrl();
+        }
 
         if (contentWrapper.contentType.equals(TYPE_ARTICLE)) {
             contentWrapper.body = content.getBody();
