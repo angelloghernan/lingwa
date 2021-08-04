@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.activities;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.example.lingwa.BuildConfig;
+import com.example.lingwa.R;
 import com.example.lingwa.fragments.AddPostFragment;
 import com.example.lingwa.fragments.HomeFragment;
 import com.example.lingwa.fragments.ProfileFragment;

@@ -20,8 +20,8 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.lingwa.ContentActivity;
-import com.example.lingwa.PostDetailsActivity;
+import com.example.lingwa.activities.ContentActivity;
+import com.example.lingwa.activities.PostDetailsActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Content;
@@ -30,8 +30,6 @@ import com.example.lingwa.models.Post;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.example.lingwa.wrappers.PostWrapper;
 import com.google.android.material.tabs.TabLayout;
-import com.parse.FindCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -44,8 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import me.samlss.broccoli.Broccoli;
 
 /**
  * A simple {@link Fragment} subclass.

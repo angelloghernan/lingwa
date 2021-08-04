@@ -1,7 +1,6 @@
-package com.example.lingwa;
+package com.example.lingwa.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,9 +11,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 
+import com.example.lingwa.R;
 import com.example.lingwa.adapters.WordPickerAdapter;
 import com.example.lingwa.models.Challenge;
 import com.parse.ParseException;

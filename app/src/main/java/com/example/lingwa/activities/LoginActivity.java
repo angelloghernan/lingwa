@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,15 +11,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.lingwa.R;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseInstallation;
-import com.parse.ParseObject;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
-
-import nl.siegmann.epublib.epub.Main;
 
 public class LoginActivity extends AppCompatActivity {
 

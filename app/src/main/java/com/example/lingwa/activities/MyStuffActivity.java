@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,21 +19,17 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.example.lingwa.R;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
 import com.example.lingwa.util.FileUtils;
-import com.example.lingwa.util.epubparser.BookSection;
-import com.example.lingwa.util.epubparser.Reader;
-import com.example.lingwa.util.epubparser.exception.OutOfPagesException;
-import com.example.lingwa.util.epubparser.exception.ReadingException;
 import com.example.lingwa.wrappers.ContentWrapper;
 import com.example.lingwa.wrappers.WordWrapper;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import org.jetbrains.annotations.NotNull;
 import org.parceler.Parcels;

@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +31,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.lingwa.R;
 import com.example.lingwa.models.Content;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;

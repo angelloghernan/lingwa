@@ -24,10 +24,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.lingwa.ChallengePickerActivity;
-import com.example.lingwa.LoginActivity;
-import com.example.lingwa.MyStuffActivity;
-import com.example.lingwa.PostDetailsActivity;
+import com.example.lingwa.activities.ChallengePickerActivity;
+import com.example.lingwa.activities.LoginActivity;
+import com.example.lingwa.activities.MyStuffActivity;
+import com.example.lingwa.activities.PostDetailsActivity;
 import com.example.lingwa.R;
 import com.example.lingwa.adapters.PostAdapter;
 import com.example.lingwa.models.Challenge;

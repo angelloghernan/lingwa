@@ -21,13 +21,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Lingwa">
         <activity
-            android:name=".ChallengePickerActivity"
+            android:name=".activities.ChallengePickerActivity"
             android:noHistory="true" />
-        <activity android:name=".ChallengeActivity" />
-        <activity android:name=".PostDetailsActivity" />
-        <activity android:name=".FlashcardsActivity" />
-        <activity android:name=".MyStuffActivity" />
-        <activity android:name=".LoginActivity"
+        <activity android:name=".activities.ChallengeActivity" />
+        <activity android:name=".activities.PostDetailsActivity" />
+        <activity android:name=".activities.FlashcardsActivity" />
+        <activity android:name=".activities.MyStuffActivity" />
+        <activity android:name=".activities.LoginActivity"
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,8 +49,8 @@
             android:name="com.parse.push.gcm_sender_id"
             android:value="id:1070394322763" />
 
-        <activity android:name=".ContentActivity" />
-        <activity android:name=".MainActivity" />
+        <activity android:name=".activities.ContentActivity" />
+        <activity android:name=".activities.MainActivity" />
 
         <service android:name="com.parse.fcm.ParseFirebaseMessagingService">
             <intent-filter>

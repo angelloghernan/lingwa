@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.lingwa.R;
 import com.example.lingwa.models.Challenge;
 import com.example.lingwa.util.Translator;
 import com.parse.FindCallback;

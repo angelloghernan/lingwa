@@ -5,7 +5,7 @@
     android:id="@+id/rlFlashcardLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FlashcardsActivity">
+    tools:context=".activities.FlashcardsActivity">
 
     <ProgressBar
         android:id="@+id/pbFlashcardProgress"

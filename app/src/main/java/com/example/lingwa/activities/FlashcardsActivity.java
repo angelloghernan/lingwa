@@ -1,4 +1,4 @@
-package com.example.lingwa;
+package com.example.lingwa.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -19,6 +19,7 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.lingwa.R;
 import com.example.lingwa.fragments.QuizFragment;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.models.Word;
