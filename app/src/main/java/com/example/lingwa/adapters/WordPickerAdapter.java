@@ -41,7 +41,7 @@ public class WordPickerAdapter extends RecyclerView.Adapter<WordPickerAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
         String word = wordList.get(position);
-        holder.bind(word);
+        holder.bind(word, position);
     }
 
     @Override
@@ -78,8 +78,9 @@ public class WordPickerAdapter extends RecyclerView.Adapter<WordPickerAdapter.Vi
             });
         }
 
-        public void bind(String word) {
+        public void bind(String word, int position) {
             tvCard.setText(word);
+            card.setChecked(checkedWords.get(position));
         }
     }
 }

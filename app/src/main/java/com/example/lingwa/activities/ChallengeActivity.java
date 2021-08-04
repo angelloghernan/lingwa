@@ -54,6 +54,7 @@ public class ChallengeActivity extends AppCompatActivity {
     boolean userExited = false;
     boolean opponentIsReady = false;
     boolean opponentHasSelected = false;
+    boolean userReady = false;
     int wordIndex = 0;
     Challenge challenge;
     String challengeId;
@@ -71,6 +72,8 @@ public class ChallengeActivity extends AppCompatActivity {
     Button btnChallengeSubmit;
     TextView tvChallengeWord;
     TextView tvChallengeTip;
+
+    SubscriptionHandling<Challenge> challengeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,7 +123,7 @@ public class ChallengeActivity extends AppCompatActivity {
         challengeQuery.whereEqualTo(ParseObject.KEY_OBJECT_ID, challengeId);
         challengeQuery.whereExists(opponentIdentity + Challenge.SUFFIX_WORDS);
 
-        SubscriptionHandling<Challenge> challengeListener = client.subscribe(challengeQuery);
+        challengeListener = client.subscribe(challengeQuery);
 
         challengeListener.handleSubscribe(query -> {
             // Handle stuff when the client has subscribed to the query.
@@ -179,13 +182,17 @@ public class ChallengeActivity extends AppCompatActivity {
                         tvChallengeTip.setVisibility(View.VISIBLE);
                         btnChallengeSubmit.setClickable(true);
                         opponentIsReady = true;
-                        tvChallengeWord.setText(words.get(0));
+                        if (!userReady) {
+                            setUpChallenge();
+                        } else {
+                            tvChallengeWord.setText(words.get(0));
+                        }
                     }
                     return;
                 }
 
                 if (challenge.getProgress(opponentIdentity) >= NUM_WORDS) {
-                    MotionToast.Companion.createColorToast((Activity) this,
+                    MotionToast.Companion.createColorToast(this,
                             "You lose :(",
                             "Your opponent won the match",
                             MotionToast.TOAST_ERROR,
@@ -226,14 +233,16 @@ public class ChallengeActivity extends AppCompatActivity {
         });
 
         challengeListener.handleEvent(SubscriptionHandling.Event.DELETE, (query, challenge) -> {
-           // If the other user exits and deletes the challenge, this will be called.
+            // If the other user exits and deletes the challenge, this will be called and will show
+            // a popup telling them that their opponent left (they deleted the Challenge entry)
+            // If the user has already exited (they/their opponent won), this will do nothing
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
                 if(userExited) {
                     return;
                 }
                 Log.i(TAG, "other user deleted challenge");
-                MotionToast.Companion.createColorToast((Activity) this,
+                MotionToast.Companion.createColorToast(this,
                         "Opponent left",
                         "Your opponent left the match!",
                         MotionToast.TOAST_INFO,
@@ -345,21 +354,22 @@ public class ChallengeActivity extends AppCompatActivity {
 
             handler.post(() -> {
                 try {
+                    userReady = true;
                     if (opponentIsReady) {
                         tvChallengeWord.setText(words.get(0));
                     }
-                    // note: duplicate code, refactor
+                    // note: duplicate code, refactor somehow?
                     Glide.with(this)
-                            .load(challenge.getChallenger().getParseFile("profilePicture").getUrl())
+                            .load(challenge.getChallenger().fetchIfNeeded().getParseFile("profilePicture").getUrl())
                             .circleCrop()
                             .placeholder(R.drawable.default_profile_picture)
                             .into((ImageView) findViewById(R.id.ivChallenger));
                     Glide.with(this)
-                            .load(challenge.getChallenged().getParseFile("profilePicture").getUrl())
+                            .load(challenge.getChallenged().fetchIfNeeded().getParseFile("profilePicture").getUrl())
                             .circleCrop()
                             .placeholder(R.drawable.default_profile_picture)
                             .into((ImageView) findViewById(R.id.ivChallenged));
-                } catch (NullPointerException e) {
+                } catch (NullPointerException | ParseException e) {
                     Log.e(TAG, "Failure setting up challenge UI: " + e.toString());
                 }
             });

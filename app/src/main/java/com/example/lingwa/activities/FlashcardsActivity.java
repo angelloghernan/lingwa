@@ -137,16 +137,19 @@ public class FlashcardsActivity extends AppCompatActivity {
 
                         wordList.get(wordIndex).setStruggleIndex(struggleIndex - 2);
 
+                        // remove the quiz fragment from view and revert back to the flashcard view
                         transaction.remove(quizFragment);
                         transaction.addToBackStack(null);
                         transaction.commit();
                         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
                         tvWord.setVisibility(View.VISIBLE);
                         tvWord.startAnimation(fadeIn);
                         tvWord.setText(currentWord);
                         flFlashcard.setBackgroundResource(R.drawable.rounded_shape);
                         flFlashcard.setAnimation(fadeIn);
                         etAnswer.setText("");
+
                         quizShowing = false;
                         cannotFlip = false;
                         answeredCorrectly = true;
@@ -242,7 +245,6 @@ public class FlashcardsActivity extends AppCompatActivity {
                 word.setStruggleIndex(word.getStruggleIndex() + 1);
                 wordList.set(wordIndex, word);
             }
-
 
             flashcardFlipped = !flashcardFlipped;
         }
