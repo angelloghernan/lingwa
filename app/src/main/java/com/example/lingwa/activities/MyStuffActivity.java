@@ -98,17 +98,9 @@ public class MyStuffActivity extends AppCompatActivity {
 
 
         // Create a list of word wrappers so we can pass it to an intent later on
-        // Todo: make the initialization process a static function in the WordWrapper class (WordWrapper.fromWord)
         for (int i = 0; i < ujwEntryList.size(); i++) {
             UserJoinWord ujwEntry = ujwEntryList.get(i);
-            Word word = ujwEntry.getWord();
-            WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(),
-                    ujwEntry.getSavedBy(), word.getOriginatesFrom().getObjectId());
-            wordWrapper.setFamiliarityScore(ujwEntry.getFamiliarityScore());
-            wordWrapper.setParentObjectId(ujwEntry.getObjectId());
-            wordWrapper.setStruggleIndex(ujwEntry.getStruggleIndex());
-            wordWrapper.setStreak(ujwEntry.getStreak());
-            wordWrapper.setGotRightLastTime(ujwEntry.getGotRightLastTime());
+            WordWrapper wordWrapper = WordWrapper.fromUJW(ujwEntry);
             wordList.add(wordWrapper);
         }
 

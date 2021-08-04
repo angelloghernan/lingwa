@@ -1,5 +1,8 @@
 package com.example.lingwa.wrappers;
 
+import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.models.Word;
+
 import org.parceler.Parcel;
 
 @Parcel
@@ -22,6 +25,18 @@ public class WordWrapper {
         this.objectId = objectId;
         this.parentSavedBy = parentSavedBy;
         this.originatesFromId = originatesFromId;
+    }
+
+    public static WordWrapper fromUJW(UserJoinWord ujwEntry) {
+        Word word = ujwEntry.getWord();
+        WordWrapper wordWrapper = new WordWrapper(word.getOriginalWord(), word.getObjectId(),
+                ujwEntry.getSavedBy(), word.getOriginatesFrom().getObjectId());
+        wordWrapper.setFamiliarityScore(ujwEntry.getFamiliarityScore());
+        wordWrapper.setParentObjectId(ujwEntry.getObjectId());
+        wordWrapper.setStruggleIndex(ujwEntry.getStruggleIndex());
+        wordWrapper.setStreak(ujwEntry.getStreak());
+        wordWrapper.setGotRightLastTime(ujwEntry.getGotRightLastTime());
+        return wordWrapper;
     }
 
     public void setFamiliarityScore(int familiarityScore) {

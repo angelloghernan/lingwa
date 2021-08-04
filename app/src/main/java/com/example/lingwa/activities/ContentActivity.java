@@ -93,6 +93,8 @@ public class ContentActivity extends AppCompatActivity {
 
 
         // Get the toolbar and hide it so that we can show the custom toolbar with a back button
+        // Back button needed for mobile devices without a built-in toolbar on the bottom with a back button
+        // (ie: newest Google Pixel models) since otherwise it is quite easily to accidentally hit a word
         Toolbar toolbar = (Toolbar) findViewById(R.id.tbContentToolbar);
         toolbar.setNavigationIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_baseline_arrow_back_24, getTheme()));
         getSupportActionBar().hide();
@@ -112,6 +114,9 @@ public class ContentActivity extends AppCompatActivity {
             isEpub = true;
             reader = new Reader();
             reader.setIsIncludingTextContent(true);
+            // currently using an arbitrarily large number of characters to ensure that each chapter is loaded
+            // individually in sections (it cuts off in chapters regardless of max chars).
+            // Not the best in ALL cases, but at least for the scope of this project it works well enough
             reader.setMaxContentPerSection(1000000);
             try {
                 reader.setFullContent(contentWrapper.epubPath);
@@ -140,12 +145,13 @@ public class ContentActivity extends AppCompatActivity {
                             currentPage--;
                             break;
                         }
+                        // used for loading epub books in sections
+                        // unused in articles
                         if (readerIndex > 0) {
                             readerIndex--;
                             paginator.changeSection(readerIndex);
                             currentPage = paginator.size() - 1;
                         }
-
                         return false;
                     case R.id.action_next_page:
                         if (currentPage < paginator.size() - 1) {
@@ -317,6 +323,9 @@ public class ContentActivity extends AppCompatActivity {
 
                             float arrowPosition = 0.3f;
 
+                            // fixes visual bug where if a translation is short enough
+                            // (roughly two letters or less on most screens),
+                            // the balloon arrow will appear malformed
                             if (translation.length() <= 2) {
                                 arrowPosition = 0.5f;
                             }
@@ -377,7 +386,7 @@ public class ContentActivity extends AppCompatActivity {
     };
 
     // Create an (approximate) Rect around the word's line so we can tell where to center the popup translation Balloon
-    // Used currently just to get the y-value (rectangle is created around line)
+    // Used currently just to get the y-value (rectangle is created around line, not the word specifically as it does not matter)
     private Rect getSpanCoordinateRect(TextView textView, ClickableSpan span) {
         Rect textViewRect = new Rect();
 
@@ -385,11 +394,7 @@ public class ContentActivity extends AppCompatActivity {
         Layout textViewLayout = textView.getLayout();
 
         double clickedTextStartOffset = completeText.getSpanStart(span);
-        // double clickedTextEndOffset = completeText.getSpanEnd(span);
-        // double clickedTextStartX = textViewLayout.getPrimaryHorizontal((int) clickedTextStartOffset);
-
         int lineStartOffset = textViewLayout.getLineForOffset((int) clickedTextStartOffset);
-        // int lineEndOffset = textViewLayout.getLineForOffset((int) clickedTextEndOffset);
         textViewLayout.getLineBounds(lineStartOffset, textViewRect);
 
         return textViewRect;
