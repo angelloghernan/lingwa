@@ -36,11 +36,19 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    ParseLiveQueryClient parseLiveQueryClient = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Back4App's Parse setup
+        Parse.initialize(new Parse.Configuration.Builder(this)
+                .applicationId(BuildConfig.BACK4APP_APP_ID)
+                .clientKey(BuildConfig.BACK4APP_CLIENT_KEY)
+                .server("wss://lingwa.b4a.io/").build()
+        );
 
         initializeSocket();
 
@@ -78,16 +86,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    void initializeSocket() {
-        // Back4App's Parse setup
-        Parse.initialize(new Parse.Configuration.Builder(this)
-                .applicationId(BuildConfig.BACK4APP_APP_ID)
-                .clientKey(BuildConfig.BACK4APP_CLIENT_KEY)
-                .server("wss://lingwa.b4a.io/").build()
-        );
-        // Init Live Query Client
-        ParseLiveQueryClient parseLiveQueryClient = null;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initializeSocket();
+    }
 
+    void initializeSocket() {
+        // Init Live Query Client
         try {
             parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI("wss://lingwa.b4a.io/"));
         } catch (URISyntaxException e) {

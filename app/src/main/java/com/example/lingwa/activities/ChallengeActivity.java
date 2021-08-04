@@ -114,6 +114,7 @@ public class ChallengeActivity extends AppCompatActivity {
         } catch (URISyntaxException e) {
             Log.e(TAG, "Issue creating web socket for Parse server: " + e.toString());
         }
+
         ParseQuery<Challenge> challengeQuery = ParseQuery.getQuery(Challenge.class);
 
         challengeQuery.whereEqualTo(ParseObject.KEY_OBJECT_ID, challengeId);
@@ -253,12 +254,12 @@ public class ChallengeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        userExited = true;
         try {
             challenge.delete();
         } catch (ParseException | NullPointerException e) {
             Log.e(TAG, "Error deleting challenge onBackPressed: " + e.toString());
         }
-        userExited = true;
         finish();
     }
 
