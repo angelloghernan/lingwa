@@ -191,6 +191,7 @@ public class ChallengeActivity extends AppCompatActivity {
                             MotionToast.GRAVITY_BOTTOM,
                             MotionToast.SHORT_DURATION,
                             ResourcesCompat.getFont(this, R.font.helvetica_regular));
+                    userExited = true;
                     challenge.deleteInBackground();
                     finish();
                     return;
