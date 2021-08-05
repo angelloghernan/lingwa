@@ -7,9 +7,9 @@
     <TextView
         android:id="@+id/tvBookTitle"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:gravity="center"
         android:text="Title"
-        android:textSize="34sp" />
+        android:textSize="24sp" />
 </RelativeLayout>

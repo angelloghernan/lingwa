@@ -16,6 +16,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
@@ -47,6 +49,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -82,40 +86,15 @@ public class MyStuffActivity extends AppCompatActivity {
         rvBooks = findViewById(R.id.rvBooks);
         pbStuffLoading.setActivated(false);
 
-        ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
-        ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
-        ujwQuery.include("word");
-
         bookAdapter = new BookAdapter(this, bookList, callback);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.HORIZONTAL);
         rvBooks.setLayoutManager(layoutManager);
         rvBooks.setAdapter(bookAdapter);
 
-        try {
-            ujwEntryList = ujwQuery.find();
-        } catch (ParseException e) {
-            Log.e(TAG, e.toString());
-        }
-
         displayedWords = new ArrayList<>();
-        if (ujwEntryList != null) {
-            for (int i = 0; i < ujwEntryList.size(); i++) {
-                    UserJoinWord ujwEntry = ujwEntryList.get(i);
-                    if (ujwEntry.getSavedBy().equals("user")) {
-                        displayedWords.add(Objects.requireNonNull(ujwEntry.getWord().getOriginalWord()));
-                    }
-            }
-        }
 
-        if (displayedWords.size() < 1) {
-            displayedWords.add("No words saved!");
-            displayedWords.add("Press and hold on words while reading to save words.");
-        }
-
-        ArrayAdapter<String> savedWordsAdapter =
-                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayedWords);
-        lvSavedWords.setAdapter(savedWordsAdapter);
+        displayUserSavedWords();
 
 
         // Create a list of word wrappers so we can pass it to an intent later on
@@ -128,7 +107,7 @@ public class MyStuffActivity extends AppCompatActivity {
         btnPractice.setOnClickListener(startPractice);
         btnUpload.setOnClickListener(uploadBook);
 
-        getUserBooks();
+        displayUserBooks();
     }
 
     // When the practice button is clicked, make sure there are words available for the user before
@@ -203,6 +182,41 @@ public class MyStuffActivity extends AppCompatActivity {
         }
     }
 
+    private void displayUserSavedWords() {
+        ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
+        ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
+        ujwQuery.include("word");
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+            try {
+                ujwEntryList = ujwQuery.find();
+            } catch (ParseException e) {
+                Log.e(TAG, e.toString());
+                return;
+            }
+
+            for (int i = 0; i < ujwEntryList.size(); i++) {
+                UserJoinWord ujwEntry = ujwEntryList.get(i);
+                if (ujwEntry.getSavedBy().equals("user")) {
+                    displayedWords.add(Objects.requireNonNull(ujwEntry.getWord().getOriginalWord()));
+                }
+            }
+
+            if (displayedWords.size() < 1) {
+                displayedWords.add("No words saved!");
+                displayedWords.add("Press and hold on words while reading to save words.");
+            }
+
+            handler.post(() -> {
+                ArrayAdapter<String> savedWordsAdapter =
+                        new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayedWords);
+                lvSavedWords.setAdapter(savedWordsAdapter);
+            });
+        });
+    }
+
     private void readyBookContent(String title, String path) {
         ParseFile epubFile = new ParseFile(new File(path));
         pbStuffLoading.setVisibility(View.VISIBLE);
@@ -232,7 +246,7 @@ public class MyStuffActivity extends AppCompatActivity {
         });
     }
 
-    private void getUserBooks() {
+    private void displayUserBooks() {
         ParseQuery<Content> bookQuery = ParseQuery.getQuery(Content.class);
         bookQuery.whereEqualTo(Content.KEY_UPLOADER, ParseUser.getCurrentUser());
         bookQuery.whereEqualTo(Content.KEY_TYPE, Content.TYPE_BOOK);
@@ -254,6 +268,7 @@ public class MyStuffActivity extends AppCompatActivity {
     BookAdapter.AdapterCallback callback = (position, book) -> {
       // do stuff when book item clicked
         try {
+            pbStuffLoading.setVisibility(View.VISIBLE);
             Intent intent = new Intent(context, ContentActivity.class);
 
             File bookFile = book.fetchIfNeeded().getParseFile(Content.KEY_ATTACHMENT).getFile();
@@ -266,9 +281,11 @@ public class MyStuffActivity extends AppCompatActivity {
             contentWrapper.title = book.getTitle();
 
             intent.putExtra("content", Parcels.wrap(contentWrapper));
+            pbStuffLoading.setVisibility(View.INVISIBLE);
             startActivity(intent);
         } catch (ParseException | NullPointerException e) {
             Log.e(TAG, "Failed to open book: " + e.toString());
+            pbStuffLoading.setVisibility(View.INVISIBLE);
         }
     };
 
