@@ -62,6 +62,8 @@ public class MyStuffActivity extends AppCompatActivity {
     public static final int FLASHCARD_REQUEST_CODE = 10;
     private static final int UPLOAD_REQUEST_CODE = 11;
 
+    boolean wordsLoaded = false;
+
     ListView lvSavedWords;
     Button btnPractice;
     Button btnUpload;
@@ -97,13 +99,6 @@ public class MyStuffActivity extends AppCompatActivity {
         displayUserSavedWords();
 
 
-        // Create a list of word wrappers so we can pass it to an intent later on
-        for (int i = 0; i < ujwEntryList.size(); i++) {
-            UserJoinWord ujwEntry = ujwEntryList.get(i);
-            WordWrapper wordWrapper = WordWrapper.fromUJW(ujwEntry);
-            wordList.add(wordWrapper);
-        }
-
         btnPractice.setOnClickListener(startPractice);
         btnUpload.setOnClickListener(uploadBook);
 
@@ -115,6 +110,10 @@ public class MyStuffActivity extends AppCompatActivity {
     View.OnClickListener startPractice = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (!wordsLoaded) {
+                return;
+            }
+
             if (ParseUser.getCurrentUser().getJSONArray("recentArticles") == null) {
                 MotionToast.Companion.createToast((Activity) context,
                         "Warning",
@@ -209,7 +208,15 @@ public class MyStuffActivity extends AppCompatActivity {
                 displayedWords.add("Press and hold on words while reading to save words.");
             }
 
+            // add these words to the wordwrapper list to pass to intent later on
+            for (int i = 0; i < ujwEntryList.size(); i++) {
+                UserJoinWord ujwEntry = ujwEntryList.get(i);
+                WordWrapper wordWrapper = WordWrapper.fromUJW(ujwEntry);
+                wordList.add(wordWrapper);
+            }
+
             handler.post(() -> {
+                wordsLoaded = true;
                 ArrayAdapter<String> savedWordsAdapter =
                         new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayedWords);
                 lvSavedWords.setAdapter(savedWordsAdapter);
