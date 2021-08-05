@@ -70,6 +70,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         public ViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
             tvBookTitle = itemView.findViewById(R.id.tvBookTitle);
+            itemView.setOnClickListener(this::onClick);
         }
 
         public void bind(ContentWrapper bookWrapper) {

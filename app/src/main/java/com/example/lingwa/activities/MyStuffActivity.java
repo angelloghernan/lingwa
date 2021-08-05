@@ -199,7 +199,7 @@ public class MyStuffActivity extends AppCompatActivity {
 
             builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
-            builder.create();
+            builder.show();
         }
     }
 
@@ -254,8 +254,19 @@ public class MyStuffActivity extends AppCompatActivity {
     BookAdapter.AdapterCallback callback = (position, book) -> {
       // do stuff when book item clicked
         try {
+            Intent intent = new Intent(context, ContentActivity.class);
+
             File bookFile = book.fetchIfNeeded().getParseFile(Content.KEY_ATTACHMENT).getFile();
-            String path = bookFile.getAbsolutePath();
+
+            ContentWrapper contentWrapper = new ContentWrapper();
+            contentWrapper.epubPath = bookFile.getAbsolutePath();
+            contentWrapper.contentType = Content.TYPE_BOOK;
+            contentWrapper.objectId = book.getObjectId();
+            contentWrapper.attachmentUrl = book.getParseFile(Content.KEY_ATTACHMENT).getUrl();
+            contentWrapper.title = book.getTitle();
+
+            intent.putExtra("content", Parcels.wrap(contentWrapper));
+            startActivity(intent);
         } catch (ParseException | NullPointerException e) {
             Log.e(TAG, "Failed to open book: " + e.toString());
         }

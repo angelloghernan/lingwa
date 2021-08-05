@@ -65,10 +65,12 @@
         android:id="@+id/btnUpload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_alignStart="@+id/btnPractice"
+        android:layout_alignEnd="@+id/btnPractice"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="3dp"
-        android:layout_marginBottom="1dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp"
         android:text="Upload" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -79,7 +81,7 @@
         android:layout_below="@+id/btnPractice"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="5dp"
         android:orientation="horizontal" />
 
 </RelativeLayout>
