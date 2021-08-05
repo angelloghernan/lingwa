@@ -36,6 +36,7 @@ import com.example.lingwa.models.FollowEntry;
 import com.example.lingwa.models.Post;
 import com.example.lingwa.models.UserJoinWord;
 import com.example.lingwa.util.ParseApplication;
+import com.example.lingwa.util.SharedActivityInteractions;
 import com.example.lingwa.wrappers.PostWrapper;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -66,6 +67,7 @@ public class ProfileFragment extends Fragment {
     public static final String ARG_PROFILE_PICTURE = "profilePicture";
     private static final String TAG = "MyProfileFragment";
     public static final int POST_DETAILS_REQUEST = 101;
+    private static final int CHALLENGE_REQUEST = 202;
 
     private String userId;
     private String username;
@@ -306,7 +308,7 @@ public class ProfileFragment extends Fragment {
                 intent.putExtra("challengeId", challenge.getObjectId());
                 intent.putExtra("wordList", Parcels.wrap(wordList));
                 attemptingToChallenge = false;
-                startActivity(intent);
+                startActivityForResult(intent, CHALLENGE_REQUEST);
             });
         });
     };
@@ -343,26 +345,23 @@ public class ProfileFragment extends Fragment {
         followEntry.whereEqualTo(FollowEntry.KEY_FOLLOWER, follower);
         followEntry.whereEqualTo(FollowEntry.KEY_FOLLOWED, followed);
 
-        followEntry.getFirstInBackground(new GetCallback<FollowEntry>() {
-            @Override
-            public void done(FollowEntry object, ParseException e) {
-                followCheckFinished = true;
+        followEntry.getFirstInBackground((object, e) -> {
+            followCheckFinished = true;
 
-                if (e != null) {
-                    userFollows = false;
+            if (e != null) {
+                userFollows = false;
 
-                    if (e.getCode() == ParseException.OBJECT_NOT_FOUND) {
-                        btnLeft.setText(R.string.follow);
-                        return;
-                    }
-
-                    Log.e(TAG, "error checking follower status: " + e.toString());
+                if (e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+                    btnLeft.setText(R.string.follow);
                     return;
                 }
 
-                btnLeft.setText(R.string.unfollow);
-                userFollows = true;
+                Log.e(TAG, "error checking follower status: " + e.toString());
+                return;
             }
+
+            btnLeft.setText(R.string.unfollow);
+            userFollows = true;
         });
     }
 
@@ -407,6 +406,11 @@ public class ProfileFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        if (data == null) {
+            Log.e(TAG, "Data is null");
+            Log.i(TAG, String.format("result: %d  request: %d", resultCode, requestCode));
+        }
+
         if (resultCode != Activity.RESULT_OK || data == null) {
             return;
         }
@@ -416,6 +420,9 @@ public class ProfileFragment extends Fragment {
             int position = data.getIntExtra("position", 0);
             postList.get(position).updateFromWrapper(postWrapper);
             adapter.notifyItemChanged(position);
+        } else if (requestCode == CHALLENGE_REQUEST) {
+            List<String> failedWords = Parcels.unwrap(data.getParcelableExtra("failedWords"));
+            SharedActivityInteractions.promptUserToSaveOpponentWords(getContext(), failedWords);
         }
     }
 }

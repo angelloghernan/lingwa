@@ -1,10 +1,14 @@
 package com.example.lingwa.activities;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +23,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.lingwa.R;
 import com.example.lingwa.models.Challenge;
+import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.models.Word;
 import com.example.lingwa.util.Translator;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -34,6 +40,7 @@ import com.skydoves.balloon.BalloonAnimation;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.parceler.Parcels;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,16 +53,20 @@ import java.util.concurrent.Executors;
 import www.sanju.motiontoast.MotionToast;
 
 public class ChallengeActivity extends AppCompatActivity {
-
     private static final String TAG = "ChallengeActivity";
-    private static final int NUM_WORDS = 10;
+    public static final int NUM_CHALLENGE_WORDS = 10;
 
     boolean initiatedChallenge;
     boolean userExited = false;
     boolean opponentIsReady = false;
     boolean opponentHasSelected = false;
     boolean userReady = false;
+    boolean failedThisWord = false;
+
     int wordIndex = 0;
+    int numFailedWords = 0;
+    List<String> failedWords;
+
     Challenge challenge;
     String challengeId;
     String identity;
@@ -74,6 +85,7 @@ public class ChallengeActivity extends AppCompatActivity {
     TextView tvChallengeTip;
 
     SubscriptionHandling<Challenge> challengeListener;
+    ParseQuery<Challenge> challengeQuery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +118,7 @@ public class ChallengeActivity extends AppCompatActivity {
         tvChallengeTip = findViewById(R.id.tvChallengeTip);
 
         words = new ArrayList<>();
+        failedWords = new ArrayList<>();
 
         if (!opponentIsReady) {
             tvChallengeTip.setVisibility(View.INVISIBLE);
@@ -116,9 +129,10 @@ public class ChallengeActivity extends AppCompatActivity {
             client = ParseLiveQueryClient.Factory.getClient(new URI("wss://lingwa.b4a.io/"));
         } catch (URISyntaxException e) {
             Log.e(TAG, "Issue creating web socket for Parse server: " + e.toString());
+            finish();
         }
 
-        ParseQuery<Challenge> challengeQuery = ParseQuery.getQuery(Challenge.class);
+        challengeQuery = ParseQuery.getQuery(Challenge.class);
 
         challengeQuery.whereEqualTo(ParseObject.KEY_OBJECT_ID, challengeId);
         challengeQuery.whereExists(opponentIdentity + Challenge.SUFFIX_WORDS);
@@ -191,7 +205,7 @@ public class ChallengeActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (challenge.getProgress(opponentIdentity) >= NUM_WORDS) {
+                if (challenge.getProgress(opponentIdentity) >= NUM_CHALLENGE_WORDS) {
                     MotionToast.Companion.createColorToast(this,
                             "You lose :(",
                             "Your opponent won the match",
@@ -201,6 +215,7 @@ public class ChallengeActivity extends AppCompatActivity {
                             ResourcesCompat.getFont(this, R.font.helvetica_regular));
                     userExited = true;
                     challenge.deleteInBackground();
+                    client.disconnect();
                     finish();
                     return;
                 }
@@ -225,7 +240,7 @@ public class ChallengeActivity extends AppCompatActivity {
                     balloon.show(ivOpponent);
                 }
 
-                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) * 100 / NUM_WORDS);
+                pbOpponent.setProgress(challenge.getProgress(opponentIdentity) * 100 / NUM_CHALLENGE_WORDS);
 
                 // update class challenge entry
                 this.challenge = challenge;
@@ -250,15 +265,12 @@ public class ChallengeActivity extends AppCompatActivity {
                         MotionToast.SHORT_DURATION,
                         ResourcesCompat.getFont(this, R.font.helvetica_regular));
 
+                client.disconnect();
                 finish();
             });
         });
 
         btnChallengeSubmit.setOnClickListener(submitAnswer);
-
-        if (opponentHasSelected) {
-            setUpChallenge();
-        }
     }
 
     @Override
@@ -272,6 +284,8 @@ public class ChallengeActivity extends AppCompatActivity {
         finish();
     }
 
+
+
     View.OnClickListener submitAnswer = v -> {
         if (!opponentIsReady) {
             return;
@@ -284,6 +298,7 @@ public class ChallengeActivity extends AppCompatActivity {
             public void onTranslationSuccess(String translation) {
                 if (answer.toLowerCase().equals(translation.toLowerCase())) {
                     wordIndex++;
+                    failedThisWord = false;
                     if (wordIndex >= words.size()) {
                         challenge.setProgress(identity, wordIndex);
                         challenge.saveInBackground();
@@ -294,12 +309,18 @@ public class ChallengeActivity extends AppCompatActivity {
                                 MotionToast.GRAVITY_BOTTOM,
                                 MotionToast.SHORT_DURATION,
                                 ResourcesCompat.getFont(context, R.font.helvetica_regular));
+                        client.disconnect();
                         finish();
                         return;
                     }
                     tvChallengeWord.setText(words.get(wordIndex));
-                    pbCurrentUser.setProgress(wordIndex * 100 / NUM_WORDS);
+                    pbCurrentUser.setProgress(wordIndex * 100 / NUM_CHALLENGE_WORDS);
+                } else if (!failedThisWord) {
+                    failedThisWord = true;
+                    failedWords.add(words.get(wordIndex));
+                    numFailedWords++;
                 }
+
                 challenge.setAnswer(identity, answer);
                 challenge.setProgress(identity, wordIndex);
                 challenge.saveInBackground();
@@ -325,6 +346,16 @@ public class ChallengeActivity extends AppCompatActivity {
             }
         });
     };
+
+    @Override
+    public void finish() {
+        client.disconnect();
+        client.unsubscribe(challengeQuery, challengeListener);
+        Intent intent = new Intent();
+        intent.putExtra("failedWords", Parcels.wrap(failedWords));
+        setResult(RESULT_OK, intent);
+        super.finish();
+    }
 
     private void setUpChallenge() {
         // Get the words for the player to solve and mark the player as ready
@@ -375,4 +406,6 @@ public class ChallengeActivity extends AppCompatActivity {
             });
         });
     }
+
+
 }

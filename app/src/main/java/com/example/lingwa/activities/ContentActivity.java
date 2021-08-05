@@ -228,7 +228,6 @@ public class ContentActivity extends AppCompatActivity {
         }
     }
 
-    // This is a mess of callbacks, must fix later
     private LongClickableSpan getLongClickableSpan(String spanWord) {
         return new LongClickableSpan() {
             final String word = spanWord;
@@ -247,51 +246,46 @@ public class ContentActivity extends AppCompatActivity {
                 ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, currentUser);
                 ujwQuery.whereMatchesQuery(UserJoinWord.KEY_WORD, innerQuery);
                 ujwQuery.whereEqualTo(UserJoinWord.KEY_SAVED_BY, "user");
-                ujwQuery.getFirstInBackground(new GetCallback<UserJoinWord>(){
-                    @Override
-                    public void done(UserJoinWord ujw, ParseException e) {
-                        if (e != null && e.getCode() != ParseException.OBJECT_NOT_FOUND) {
-                            Log.e(TAG, "Error checking UserJoinWord table: " + e.toString());
-                            MotionToast.Companion.createColorToast((Activity) context,
-                                    "Oops!",
-                                    "There was an error saving this word.",
-                                    MotionToast.TOAST_ERROR,
-                                    MotionToast.GRAVITY_BOTTOM,
-                                    MotionToast.SHORT_DURATION,
-                                    ResourcesCompat.getFont(context, R.font.helvetica_regular));
-                            return;
-                        }
-                        if (ujw != null) {
-                            MotionToast.Companion.createColorToast((Activity) context,
-                                    "Info",
-                                    "This word is already in your word list",
-                                    MotionToast.TOAST_INFO,
-                                    MotionToast.GRAVITY_BOTTOM,
-                                    MotionToast.SHORT_DURATION,
-                                    ResourcesCompat.getFont(context, R.font.helvetica_regular));
-                            return;
-                        }
-
-                        // If the entry doesn't exist, check if the word already exists in the Word table
-                        // (should be quick because we already requested this data)
-                        // If it exists, point to the entry. If not, create a new entry
-                        // Then, save the UserJoinWord table entry.
-                        innerQuery.getFirstInBackground(new GetCallback<Word>() {
-                            @Override
-                            public void done(Word wordEntry, ParseException e) {
-                                if (e != null && e.getCode() != ParseException.OBJECT_NOT_FOUND) {
-                                    Log.e(TAG, "Error checking Word table: " + e.toString());
-                                }
-                                if (wordEntry == null) {
-                                    wordEntry = new Word(word, contentWrapper.objectId);
-                                }
-
-                                UserJoinWord ujwEntry = new UserJoinWord(currentUser, wordEntry, 0, "user");
-                                // callback only to inform user if the save was successful
-                                ujwEntry.saveInBackground(saveUjwCallback);
-                            }
-                        });
+                ujwQuery.getFirstInBackground((ujw, e) -> {
+                    if (e != null && e.getCode() != ParseException.OBJECT_NOT_FOUND) {
+                        Log.e(TAG, "Error checking UserJoinWord table: " + e.toString());
+                        MotionToast.Companion.createColorToast((Activity) context,
+                                "Oops!",
+                                "There was an error saving this word.",
+                                MotionToast.TOAST_ERROR,
+                                MotionToast.GRAVITY_BOTTOM,
+                                MotionToast.SHORT_DURATION,
+                                ResourcesCompat.getFont(context, R.font.helvetica_regular));
+                        return;
                     }
+                    if (ujw != null) {
+                        MotionToast.Companion.createColorToast((Activity) context,
+                                "Info",
+                                "This word is already in your word list",
+                                MotionToast.TOAST_INFO,
+                                MotionToast.GRAVITY_BOTTOM,
+                                MotionToast.SHORT_DURATION,
+                                ResourcesCompat.getFont(context, R.font.helvetica_regular));
+                        return;
+                    }
+
+                    // If the entry doesn't exist, check if the word already exists in the Word table
+                    // (should be quick because we already requested this data)
+                    // If it exists, point to the entry. If not, create a new entry
+                    // Then, save the UserJoinWord table entry.
+                    innerQuery.getFirstInBackground((wordEntry, e1) -> {
+                        if (e1 != null && e1.getCode() != ParseException.OBJECT_NOT_FOUND) {
+                            Log.e(TAG, "Error checking Word table: " + e1.toString());
+                            return;
+                        }
+                        if (wordEntry == null) {
+                            wordEntry = new Word(word, contentWrapper.objectId);
+                        }
+
+                        UserJoinWord ujwEntry = new UserJoinWord(currentUser, wordEntry, 0, "user");
+                        // callback only to inform user if the save was successful
+                        ujwEntry.saveInBackground(saveUjwCallback);
+                    });
                 });
             }
 

@@ -50,7 +50,8 @@
             android:value="id:1070394322763" />
 
         <activity android:name=".activities.ContentActivity" />
-        <activity android:name=".activities.MainActivity" />
+        <activity android:name=".activities.MainActivity"
+            android:launchMode="standard"/>
 
         <service android:name="com.parse.fcm.ParseFirebaseMessagingService">
             <intent-filter>

@@ -1,10 +1,12 @@
 package com.example.lingwa.activities;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +21,7 @@ import com.example.lingwa.fragments.ProfileFragment;
 import com.example.lingwa.fragments.SearchFragment;
 import com.example.lingwa.models.Challenge;
 import com.example.lingwa.models.UserJoinWord;
+import com.example.lingwa.util.SharedActivityInteractions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.parse.Parse;
 import com.parse.ParseQuery;
@@ -36,7 +39,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private static final int CHALLENGE_REQUEST = 201;
     ParseLiveQueryClient parseLiveQueryClient = null;
+    boolean challengePrompted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +97,29 @@ public class MainActivity extends AppCompatActivity {
         initializeSocket();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        if (data == null) {
+            Log.e(TAG, "Data is null");
+            Log.i(TAG, String.format("result: %d  request: %d", resultCode, requestCode));
+        } else {
+            Log.i(TAG, "DATA IS NOT NULL");
+        }
+
+        if (requestCode != CHALLENGE_REQUEST || resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if (data != null) {
+            List<String> failedWords = Parcels.unwrap(data.getParcelableExtra("failedWords"));
+            SharedActivityInteractions.promptUserToSaveOpponentWords(this, failedWords);
+        }
+
+    }
+
     void initializeSocket() {
         // Init Live Query Client
         try {
@@ -110,12 +138,17 @@ public class MainActivity extends AppCompatActivity {
                 // Run code here when a challenge is started
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(() -> {
+                    if (challengePrompted) {
+                        return;
+                    }
+                    challengePrompted = true;
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
                     builder.setMessage("New challenge from user")
                             .setTitle("Incoming Challenge");
 
                     builder.setPositiveButton("Accept", (dialog, which) -> {
+                        challengePrompted = false;
                         ParseQuery<UserJoinWord> ujwQuery = ParseQuery.getQuery(UserJoinWord.class);
                         ujwQuery.whereEqualTo(UserJoinWord.KEY_USER, ParseUser.getCurrentUser());
                         ujwQuery.whereEqualTo(UserJoinWord.KEY_SAVED_BY, UserJoinWord.KEY_USER);
@@ -138,11 +171,15 @@ public class MainActivity extends AppCompatActivity {
                             intent.putExtra("initiatedChallenge", false);
                             intent.putExtra("challengeId", challenge.getObjectId());
                             intent.putExtra("wordList", Parcels.wrap(wordList));
-                            startActivity(intent);
+                            dialog.dismiss();
+                            startActivityForResult(intent, CHALLENGE_REQUEST);
                         });
                     });
 
-                    builder.setNegativeButton("Decline", (dialog, which) -> challenge.deleteInBackground());
+                    builder.setNegativeButton("Decline", (dialog, which) -> {
+                        challenge.deleteInBackground();
+                        challengePrompted = false;
+                    });
 
                     AlertDialog dialog = builder.create();
                     dialog.show();

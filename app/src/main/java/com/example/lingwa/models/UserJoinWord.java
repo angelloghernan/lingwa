@@ -1,9 +1,25 @@
 package com.example.lingwa.models;
 
-import com.parse.Parse;
+import android.app.Activity;
+import android.content.Context;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.example.lingwa.R;
+import com.parse.FindCallback;
 import com.parse.ParseClassName;
+import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import www.sanju.motiontoast.MotionToast;
 
 @ParseClassName("UserJoinWord")
 public class UserJoinWord extends ParseObject {
@@ -14,6 +30,7 @@ public class UserJoinWord extends ParseObject {
     public static final String KEY_STRUGGLE_INDEX = "struggleIndex";
     public static final String KEY_STREAK = "streak";
     public static final String KEY_GOT_RIGHT_LAST_TIME = "gotRightLastTime";
+    private static final String TAG = "UserJoinWord";
 
     public UserJoinWord() {
 

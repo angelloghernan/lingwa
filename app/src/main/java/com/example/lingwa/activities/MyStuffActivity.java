@@ -160,7 +160,7 @@ public class MyStuffActivity extends AppCompatActivity {
             wordList = Parcels.unwrap(data.getParcelableExtra("wordList"));
         } else if (requestCode == UPLOAD_REQUEST_CODE) {
             final EditText titleInput = new EditText(this);
-            titleInput.setInputType(InputType.TYPE_TEXT_VARIATION_NORMAL);
+            titleInput.setInputType(InputType.TYPE_CLASS_TEXT);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Add Book Title");
@@ -257,6 +257,7 @@ public class MyStuffActivity extends AppCompatActivity {
         ParseQuery<Content> bookQuery = ParseQuery.getQuery(Content.class);
         bookQuery.whereEqualTo(Content.KEY_UPLOADER, ParseUser.getCurrentUser());
         bookQuery.whereEqualTo(Content.KEY_TYPE, Content.TYPE_BOOK);
+        bookQuery.orderByDescending(Content.KEY_CREATED_AT);
         bookQuery.findInBackground((books, e) -> {
             if (e != null) {
                 Log.e(TAG, "Error getting user's books: " + e.toString());
@@ -297,6 +298,7 @@ public class MyStuffActivity extends AppCompatActivity {
     };
 
     // permissions currently incomplete but working for purposes of app
+    // Todo: Possibly not needed anymore due to new implementation of ebook uploading -- check
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
